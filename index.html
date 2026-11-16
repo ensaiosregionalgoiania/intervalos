@@ -25,12 +25,13 @@
   .progresso { font-size: 0.85rem; color: #aaa; margin-bottom: 10px; text-align: right; }
   .pergunta { font-size: 1.1rem; margin-bottom: 12px; line-height: 1.4; }
   .pergunta strong { color: #ffd369; }
-  #partitura {
-    background: #fff; border-radius: 10px; padding: 10px;
-    margin-bottom: 18px; display: flex; flex-direction: column;
-    justify-content: center; align-items: center;
-    min-height: 200px;
-  }
+#partitura {
+  background: #fff; border-radius: 10px; padding: 6px;  /* era 10px */
+  margin-bottom: 12px;                                  /* era 18px */
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: center;
+  min-height: 130px;                                    /* era 200px */
+}
   #partitura svg { max-width: 100%; height: auto; }
   #legendaNotas {
     text-align: center; font-size: 0.95rem; color: #333;
@@ -146,65 +147,76 @@
 }
 #nivel label { cursor: pointer; user-select: none; color: #f0f0f0; }
 #nivel input[type="radio"] { accent-color: #ffd369; cursor: pointer; margin-right: 4px; }
-/* ===================== AJUSTES PARA CELULAR ===================== */
-html { -webkit-text-size-adjust: 100%; }
-
-body {
-  min-height: 100dvh;
-  padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
-           max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
-}
-
-/* evita atraso/zoom por toque duplo e o "hover preso" no celular */
-.opcao, button, .modo-som label, #nivel label {
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-@media (hover: none) {
-  .opcao:hover:not(.desabilitada):not(.selecionada) {
-    background: #3d3d5c;
-    border-color: transparent;
-  }
-}
-
+/* ===== CELULAR: TELA ÚNICA, SEM ARRASTAR ===== */
 @media (max-width: 600px) {
-  body { padding-top: max(10px, env(safe-area-inset-top)); }
-  .container { padding: 16px 14px; border-radius: 12px; }
+  body {
+    height: 100vh; height: 100dvh; min-height: 0;
+    align-items: stretch;
+    padding: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-right))
+             max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+  }
+  .container { padding: 8px 10px; display: flex; flex-direction: column; min-height: 0; }
+  h1 { font-size: 1.05rem; margin-bottom: 6px; }
 
-  h1 { font-size: 1.25rem; }
-  .subtitulo { font-size: 0.85rem; margin-bottom: 14px; }
-  .pergunta { font-size: 1rem; }
+  #nivel { margin-bottom: 6px; padding: 5px 8px; font-size: 0.78rem; gap: 2px 10px; }
+  #nivel input[type="radio"] { width: 16px; height: 16px; margin-right: 3px; vertical-align: middle; }
 
-  #nivel { font-size: 0.85rem; gap: 8px 12px; padding: 8px 10px; }
-  #nivel input[type="radio"] { width: 18px; height: 18px; }
+  #areaQuiz { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  .progresso { font-size: 0.75rem; margin-bottom: 2px; }
+  .pergunta { font-size: 0.85rem; margin-bottom: 4px; }
 
-  #partitura { padding: 6px; min-height: 170px; }
-  #partitura svg { width: 100%; max-width: 340px; height: auto; }
-  #legendaNotas { font-size: 0.9rem; }
+  /* a partitura escala pela ALTURA da tela */
+  #partitura { padding: 2px; margin-bottom: 6px; min-height: 0; }
+  #partitura svg { width: min(100%, 40vh); width: min(100%, 40dvh); height: auto; }
+  #legendaNotas { font-size: 0.8rem; margin-top: 0; }
 
-  .opcao { padding: 14px; min-height: 48px; font-size: 1rem; }
+  .opcoes { gap: 6px; }
+  .opcao { padding: 8px 12px; min-height: 40px; font-size: 0.95rem; }
 
-  /* botões viram grade 2x2; Próxima/Encerrar/Reiniciar ocupam a linha toda */
-  .botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  button { min-width: 0; min-height: 48px; padding: 10px 8px; font-size: 0.95rem; }
-  #btnProxima, #btnEncerrar, #btnReiniciar { grid-column: 1 / -1; }
+  /* o verde/vermelho das opções já mostra o resultado */
+  #painelFeedback { display: none !important; }
 
-  .modo-som { gap: 6px 14px; }
-  .modo-som label { padding: 8px 2px; }
-  .modo-som input[type="radio"] { width: 20px; height: 20px; vertical-align: middle; }
+  /* a ajuda ocupa o espaço que sobrar e rola só dentro dela */
+  #painelAjudaIntervalo {
+    flex: 1 1 0; min-height: 60px; overflow-y: auto;
+    margin-top: 6px; padding: 8px 10px; font-size: 0.8rem; line-height: 1.4;
+  }
+  #painelAjudaIntervalo .passo { margin-bottom: 6px; }
+  #painelAjudaIntervalo .resultado { margin-top: 6px; padding: 6px 10px; }
 
-  #painelAjudaIntervalo, #painelFeedback { padding: 12px; font-size: 0.9rem; }
-  #resultados { padding: 16px; }
-  #resultados .pontuacao { font-size: 1.2rem; }
-  .gabarito li { overflow-wrap: anywhere; }
+  /* 4 botões numa linha só, colados embaixo */
+  #areaQuiz .botoes {
+    display: grid; grid-template-columns: 1fr 1fr 1.25fr 1fr; gap: 6px;
+    margin-top: auto; padding-top: 8px;
+  }
+  #areaQuiz .botoes button { min-height: 42px; padding: 4px 2px; font-size: 0.78rem; line-height: 1.15; }
+  #btnProxima, #btnEncerrar { grid-column: auto; }
+
+  .modo-som { margin-top: 6px; font-size: 0.75rem; gap: 2px 10px; }
+  .modo-som label { padding: 2px 0; }
+  .modo-som input[type="radio"] { width: 16px; height: 16px; }
+
+  /* tela de resultados: a lista de gabarito rola dentro do próprio quadro */
+  #resultados { flex: 1 1 auto; min-height: 0; overflow-y: auto; margin-top: 8px; }
+
+  /* com a ajuda aberta, libera espaço para ela */
+  .container:has(#painelAjudaIntervalo.visivel) .pergunta,
+  .container:has(#painelAjudaIntervalo.visivel) .modo-som { display: none; }
+  .container:has(#painelAjudaIntervalo.visivel) #partitura svg { width: min(100%, 30vh); width: min(100%, 30dvh); }
+  .container:has(#painelAjudaIntervalo.visivel) .opcao { min-height: 34px; padding: 6px 10px; }
 }
-/* ================================================================ */
+
+/* telas baixas (celulares menores) */
+@media (max-width: 600px) and (max-height: 640px) {
+  .pergunta { display: none; }
+  #partitura svg { width: min(100%, 34vh); width: min(100%, 34dvh); }
+  .opcao { min-height: 36px; padding: 6px 10px; font-size: 0.9rem; }
+}
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🎵 Quiz de Intervalos Musicais</h1>
-  <p class="subtitulo">Observe a partitura e marque o intervalo correto</p>
+  <h1>🎵 Intervalos Musicais</h1>
 <div id="nivel">
   <span>Nível:</span>
   <label><input type="radio" name="modoNivel" value="basico" checked> Básico</label>
