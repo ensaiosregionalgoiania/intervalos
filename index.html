@@ -92,6 +92,7 @@
   #btnReiniciar { background: #42a5f5; color: #fff; }
   #btnReiniciar:hover { background: #1e88e5; }
 
+  /* Painel de ajuda do intervalo */
   #painelAjudaIntervalo {
     display: none;
     margin-top: 15px;
@@ -123,6 +124,7 @@
     font-weight: bold; color: #4caf50;
   }
 
+  /* Painel de feedback (mostrado brevemente antes de avançar) */
   #painelFeedback {
     display: none;
     margin-top: 15px;
@@ -137,60 +139,25 @@
   #painelFeedback .verde { color: #4caf50; font-weight: bold; }
   #painelFeedback .vermelho { color: #e53935; font-weight: bold; }
   #painelFeedback .titulo { color: #ffd369; font-weight: bold; margin-bottom: 8px; display: block; }
-
-/* ===== AJUSTES PARA CELULAR ===== */
-html { -webkit-text-size-adjust: 100%; }
-body {
-  min-height: 100dvh;
-  padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
-           max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+#nivel {
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+  gap: 6px 16px; margin-bottom: 18px; padding: 10px 12px;
+  background: #25253d; border-radius: 10px; font-size: 0.9rem; color: #aaa;
 }
-.opcao, button, .modo-som label {
-  touch-action: manipulation;              /* sem atraso nem zoom por toque duplo */
-  -webkit-tap-highlight-color: transparent;
-}
-/* evita o "hover preso" depois de tocar numa opção */
-@media (hover: none) {
-  .opcao:hover:not(.desabilitada):not(.selecionada) {
-    background: #3d3d5c; border-color: transparent;
-  }
-}
-
-@media (max-width: 600px) {
-  body { padding-top: max(10px, env(safe-area-inset-top)); }
-  .container { padding: 16px 14px; border-radius: 12px; }
-  h1 { font-size: 1.25rem; }
-  .subtitulo { font-size: 0.85rem; margin-bottom: 14px; }
-  .pergunta { font-size: 1rem; }
-
-  #partitura { padding: 6px; min-height: 170px; }
-  #partitura svg { width: 100%; max-width: 340px; height: auto; }
-  #legendaNotas { font-size: 0.9rem; }
-
-  .opcao { padding: 14px; min-height: 48px; font-size: 1rem; }
-
-  .botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  button { min-width: 0; min-height: 48px; padding: 10px 8px; font-size: 0.95rem; }
-  #btnProxima, #btnEncerrar, #btnReiniciar { grid-column: 1 / -1; }
-
-  .modo-som { gap: 6px 14px; }
-  .modo-som label { padding: 8px 2px; }
-  .modo-som input[type="radio"] { width: 20px; height: 20px; vertical-align: middle; }
-
-  #painelAjudaIntervalo, #painelFeedback { padding: 12px; font-size: 0.9rem; }
-  #resultados { padding: 16px; }
-  #resultados .pontuacao { font-size: 1.2rem; }
-  .gabarito li { overflow-wrap: anywhere; }
-}
-
-
-
+#nivel label { cursor: pointer; user-select: none; color: #f0f0f0; }
+#nivel input[type="radio"] { accent-color: #ffd369; cursor: pointer; margin-right: 4px; }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>🎵 Intervalos Musicais</h1>
-  
+  <h1>🎵 Quiz de Intervalos Musicais</h1>
+  <p class="subtitulo">Observe a partitura e marque o intervalo correto</p>
+<div id="nivel">
+  <span>Nível:</span>
+  <label><input type="radio" name="modoNivel" value="basico" checked> Básico</label>
+  <label><input type="radio" name="modoNivel" value="intermediario"> Intermediário</label>
+  <label><input type="radio" name="modoNivel" value="avancado"> Avançado</label>
+</div>
   <div id="areaQuiz">
     <div class="progresso" id="progresso"></div>
     <div class="pergunta" id="pergunta">Qual é o intervalo mostrado?</div>
@@ -242,613 +209,577 @@ function converterNota(nome) {
 }
 
 // ============================================================
-// BANCO DE PERGUNTAS ORIGINAL (fixo, não modificado)
+// BANCO DE PERGUNTAS (exemplo reduzido)
 // ============================================================
-const perguntasOriginais = [
-{ nota1: "dob4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "dob4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "dob4", nota2: "do#4", opcoes: ["Segunda maior", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 2 },
-{ nota1: "dob4", nota2: "reb4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 3 },
-{ nota1: "dob4", nota2: "re4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "dob4", nota2: "re#4", opcoes: ["Segunda maior", "Segunda dobrada aumentada", "Segunda aumentada", "Terça menor"], correta: 1 },
-{ nota1: "dob4", nota2: "mib4", opcoes: ["Segunda aumentada", "Terça menor", "Segunda dobrada aumentada", "Terça maior"], correta: 3 },
-{ nota1: "dob4", nota2: "mi4", opcoes: ["Terça maior", "Terça diminuta", "Quarta justa", "Terça aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "mi#4", opcoes: ["Terça dobrada aumentada", "Terça menor", "Terça aumentada", "Terça maior"], correta: 0 },
-{ nota1: "dob4", nota2: "fab4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça maior"], correta: 1 },
-{ nota1: "dob4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Terça aumentada"], correta: 1 },
-{ nota1: "dob4", nota2: "fa#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "solb4", opcoes: ["Quinta justa", "Quarta aumentada", "Quinta diminuta", "Quarta justa"], correta: 0 },
-{ nota1: "dob4", nota2: "sol4", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta dobrada aumentada", "Quinta aumentada"], correta: 2 },
-{ nota1: "dob4", nota2: "lab4", opcoes: ["Sexta menor", "Sexta aumentada", "Quinta aumentada", "Sexta maior"], correta: 3 },
-{ nota1: "dob4", nota2: "la4", opcoes: ["Sexta aumentada", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 0 },
-{ nota1: "dob4", nota2: "la#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta dobrada aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "sib4", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2 },
-{ nota1: "dob4", nota2: "si4", opcoes: ["Sétima maior", "Sétima menor", "Sexta aumentada", "Sétima aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "si#4", opcoes: ["Sétima maior", "Sétima menor", "Sétima aumentada", "Sétima dobrada aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "dob5", opcoes: ["Oitava aumentada", "Oitava justa", "Oitava diminuta", "Sétima aumentada"], correta: 1 },
-{ nota1: "dob4", nota2: "do5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2 },
-{ nota1: "dob4", nota2: "do#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava dobrada aumentada"], correta: 3 },
-{ nota1: "dob4", nota2: "reb5", opcoes: ["Nona menor", "Nona maior", "Oitava aumentada", "Nona diminuta"], correta: 0 },
-{ nota1: "dob4", nota2: "re5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 1 },
-{ nota1: "dob4", nota2: "re#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 2 },
-{ nota1: "do4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3 },
-{ nota1: "do4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "do4", nota2: "do#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "do4", nota2: "reb4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 2 },
-{ nota1: "do4", nota2: "re4", opcoes: ["Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado", "Segunda maior"], correta: 3 },
-{ nota1: "do4", nota2: "re#4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda dobrada aumentada", "Terça menor"], correta: 0 },
-{ nota1: "do4", nota2: "mib4", opcoes: ["Terça maior", "Segunda aumentada", "Terça menor", "Segunda dobrada aumentada"], correta: 2 },
-{ nota1: "do4", nota2: "mi4", opcoes: ["Terça aumentada", "Terça diminuta", "Terça maior", "Quarta justa"], correta: 2 },
-{ nota1: "do4", nota2: "mi#4", opcoes: ["Terça maior", "Terça menor", "Quarta diminuta", "Terça aumentada"], correta: 3 },
-{ nota1: "do4", nota2: "fab4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça maior"], correta: 0 },
-{ nota1: "do4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça aumentada"], correta: 1 },
-{ nota1: "do4", nota2: "fa#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 2 },
-{ nota1: "do4", nota2: "solb4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quarta dobrada aumentada", "Quarta justa"], correta: 1 },
-{ nota1: "do4", nota2: "sol4", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0 },
-{ nota1: "do4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta aumentada", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 1 },
-{ nota1: "do4", nota2: "lab4", opcoes: ["Sexta maior", "Sexta diminuta", "Sexta menor", "Quinta aumentada"], correta: 2 },
-{ nota1: "do4", nota2: "la4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1 },
-{ nota1: "do4", nota2: "la#4", opcoes: ["Sexta aumentada", "Sexta maior", "Sétima diminuta", "Sexta menor"], correta: 0 },
-{ nota1: "do4", nota2: "sib4", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Sexta aumentada"], correta: 1 },
-{ nota1: "do4", nota2: "si4", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2 },
-{ nota1: "do4", nota2: "si#4", opcoes: ["Sétima maior", "Sétima menor", "Oitava diminuta", "Sétima aumentada"], correta: 3 },
-{ nota1: "do4", nota2: "dob5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Sétima aumentada"], correta: 0 },
-{ nota1: "do4", nota2: "do5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "do4", nota2: "do#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2 },
-{ nota1: "do4", nota2: "reb5", opcoes: ["Nona maior", "Oitava aumentada", "Nona diminuta", "Nona menor"], correta: 3 },
-{ nota1: "do4", nota2: "re5", opcoes: ["Nona maior", "Nona menor", "Nona aumentada", "Oitava aumentada"], correta: 0 },
-{ nota1: "do4", nota2: "re#5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Oitava aumentada"], correta: 1 },
-{ nota1: "do#4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono dobrado diminuto", "Segunda menor"], correta: 2 },
-{ nota1: "do#4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "do#4", nota2: "do#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 0 },
-{ nota1: "do#4", nota2: "reb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Segunda diminuta"], correta: 3 },
-{ nota1: "do#4", nota2: "re4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono aumentado"], correta: 1 },
-{ nota1: "do#4", nota2: "re#4", opcoes: ["Segunda menor", "Segunda aumentada", "Segunda diminuta", "Segunda maior"], correta: 3 },
-{ nota1: "do#4", nota2: "mib4", opcoes: ["Terça diminuta", "Segunda menor", "Segunda diminuta", "Terça menor"], correta: 0 },
-{ nota1: "do#4", nota2: "mi4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Segunda aumentada"], correta: 1 },
-{ nota1: "do#4", nota2: "mi#4", opcoes: ["Terça menor", "Terça aumentada", "Terça maior", "Quarta diminuta"], correta: 2 },
-{ nota1: "do#4", nota2: "fab4", opcoes: ["Terça maior", "Quarta diminuta", "Segunda aumentada", "Quarta dobrada diminuta"], correta: 3 },
-{ nota1: "do#4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça aumentada"], correta: 0 },
-{ nota1: "do#4", nota2: "fa#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 1 },
-{ nota1: "do#4", nota2: "solb4", opcoes: ["Quarta aumentada", "Quarta diminuta", "Quarta justa", "Quinta dobrada diminuta"], correta: 3 },
-{ nota1: "do#4", nota2: "sol4", opcoes: ["Quinta justa", "Quarta aumentada", "Quinta aumentada", "Quinta diminuta"], correta: 3 },
-{ nota1: "do#4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Quarta dobrada aumentada"], correta: 0 },
-{ nota1: "do#4", nota2: "lab4", opcoes: ["Sexta menor", "Sexta diminuta", "Sexta maior", "Quinta aumentada"], correta: 1 },
-{ nota1: "do#4", nota2: "la4", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Quinta aumentada"], correta: 1 },
-{ nota1: "do#4", nota2: "la#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 3 },
-{ nota1: "do#4", nota2: "sib4", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "do#4", nota2: "si4", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Sexta aumentada"], correta: 1 },
-{ nota1: "do#4", nota2: "si#4", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 2 },
-{ nota1: "do#4", nota2: "dob5", opcoes: ["Oitava justa", "Sétima aumentada", "Oitava dobrada diminuta", "Oitava diminuta"], correta: 2 },
-{ nota1: "do#4", nota2: "do5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0 },
-{ nota1: "do#4", nota2: "do#5", opcoes: ["Oitava aumentada", "Oitava justa", "Nona menor", "Oitava diminuta"], correta: 1 },
-{ nota1: "do#4", nota2: "reb5", opcoes: ["Nona menor", "Nona diminuta", "Oitava aumentada", "Nona maior"], correta: 1 },
-{ nota1: "do#4", nota2: "re5", opcoes: ["Nona maior", "Nona aumentada", "Oitava aumentada", "Nona menor"], correta: 3 },
-{ nota1: "do#4", nota2: "re#5", opcoes: ["Nona maior", "Nona aumentada", "Nona menor", "Oitava aumentada"], correta: 0 },
-{ nota1: "reb4", nota2: "reb4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "reb4", nota2: "re4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 1 },
-{ nota1: "reb4", nota2: "re#4", opcoes: ["Segunda menor", "Segunda diminuta", "Segunda dobrada aumentada", "Uníssono dobrado aumentado"], correta: 3 },
-{ nota1: "reb4", nota2: "mib4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "reb4", nota2: "mi4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0 },
-{ nota1: "reb4", nota2: "mi#4", opcoes: ["Segunda maior", "Terça diminuta", "Terça menor", "Segunda dobrada aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "fab4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 1 },
-{ nota1: "reb4", nota2: "fa4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta diminuta"], correta: 0 },
-{ nota1: "reb4", nota2: "fa#4", opcoes: ["Terça menor", "Terça aumentada", "Terça maior", "Quarta justa"], correta: 1 },
-{ nota1: "reb4", nota2: "solb4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2 },
-{ nota1: "reb4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quarta justa"], correta: 1 },
-{ nota1: "reb4", nota2: "sol#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quarta dobrada aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "lab4", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta aumentada", "Quinta justa"], correta: 3 },
-{ nota1: "reb4", nota2: "la4", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "la#4", opcoes: ["Quinta diminuta", "Quinta aumentada", "Sexta diminuta", "Quinta dobrada aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "sib4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1 },
-{ nota1: "reb4", nota2: "si4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 2 },
-{ nota1: "reb4", nota2: "si#4", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sexta dobrada aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "dob5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "reb4", nota2: "do5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Oitava diminuta"], correta: 2 },
-{ nota1: "reb4", nota2: "do#5", opcoes: ["Sétima menor", "Sétima maior", "Oitava diminuta", "Sétima aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "reb5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "reb4", nota2: "re5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "re#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava dobrada aumentada"], correta: 3 },
-{ nota1: "reb4", nota2: "mib5", opcoes: ["Nona maior", "Nona menor", "Nona aumentada", "Nona diminuta"], correta: 0 },
-{ nota1: "reb4", nota2: "mi5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Décima diminuta"], correta: 1 },
-{ nota1: "reb4", nota2: "mi#5", opcoes: ["Nona maior", "Décima diminuta", "Décima menor", "Nona dobrada aumentada"], correta: 3 },
-{ nota1: "re4", nota2: "reb4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0 },
-{ nota1: "re4", nota2: "re4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "re4", nota2: "re#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2 },
-{ nota1: "re4", nota2: "mib4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda diminuta", "Segunda menor"], correta: 3 },
-{ nota1: "re4", nota2: "mi4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "re4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda menor", "Terça diminuta"], correta: 1 },
-{ nota1: "re4", nota2: "fab4", opcoes: ["Segunda aumentada", "Terça menor", "Segunda diminuta", "Terça diminuta"], correta: 3 },
-{ nota1: "re4", nota2: "fa4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta diminuta"], correta: 1 },
-{ nota1: "re4", nota2: "fa#4", opcoes: ["Terça maior", "Terça aumentada", "Terça menor", "Quarta justa"], correta: 0 },
-{ nota1: "re4", nota2: "solb4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1 },
-{ nota1: "re4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "re4", nota2: "sol#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 3 },
-{ nota1: "re4", nota2: "lab4", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada"], correta: 0 },
-{ nota1: "re4", nota2: "la4", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 1 },
-{ nota1: "re4", nota2: "la#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "re4", nota2: "sib4", opcoes: ["Sexta maior", "Quinta aumentada", "Sexta diminuta", "Sexta menor"], correta: 3 },
-{ nota1: "re4", nota2: "si4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 0 },
-{ nota1: "re4", nota2: "si#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sétima menor"], correta: 1 },
-{ nota1: "re4", nota2: "dob5", opcoes: ["Sétima maior", "Sexta aumentada", "Sétima diminuta", "Sétima menor"], correta: 2 },
-{ nota1: "re4", nota2: "do5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Oitava diminuta"], correta: 0 },
-{ nota1: "re4", nota2: "do#5", opcoes: ["Sétima maior", "Sétima menor", "Oitava diminuta", "Sétima aumentada"], correta: 0 },
-{ nota1: "re4", nota2: "reb5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "re4", nota2: "re5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "re4", nota2: "re#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3 },
-{ nota1: "re4", nota2: "mib5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 0 },
-{ nota1: "re4", nota2: "mi5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Décima diminuta"], correta: 1 },
-{ nota1: "re4", nota2: "mi#5", opcoes: ["Nona maior", "Décima diminuta", "Nona aumentada", "Décima maior"], correta: 2 },
-{ nota1: "re#4", nota2: "reb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Uníssono dobrado diminuto"], correta: 3 },
-{ nota1: "re#4", nota2: "re4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0 },
-{ nota1: "re#4", nota2: "re#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "re#4", nota2: "mib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "mi4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 0 },
-{ nota1: "re#4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "re#4", nota2: "fab4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda diminuta", "Terça dobrada diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "fa4", opcoes: ["Terça maior", "Terça diminuta", "Terça menor", "Quarta diminuta"], correta: 2 },
-{ nota1: "re#4", nota2: "fa#4", opcoes: ["Terça menor", "Terça aumentada", "Quarta justa", "Terça maior"], correta: 0 },
-{ nota1: "re#4", nota2: "solb4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quinta diminuta"], correta: 0 },
-{ nota1: "re#4", nota2: "sol#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 0 },
-{ nota1: "re#4", nota2: "lab4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta dobrada diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "la4", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 0 },
-{ nota1: "re#4", nota2: "la#4", opcoes: ["Quinta diminuta", "Quinta aumentada", "Quinta justa", "Sexta diminuta"], correta: 2 },
-{ nota1: "re#4", nota2: "sib4", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 1 },
-{ nota1: "re#4", nota2: "si4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 0 },
-{ nota1: "re#4", nota2: "si#4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 0 },
-{ nota1: "re#4", nota2: "dob5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima dobrada diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "do5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 2 },
-{ nota1: "re#4", nota2: "do#5", opcoes: ["Sétima diminuta", "Sétima aumentada", "Sétima menor", "Sétima maior"], correta: 3 },
-{ nota1: "re#4", nota2: "reb5", opcoes: ["Sétima diminuta", "Sétima menor", "Oitava diminuta", "Oitava dobrada diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "re5", opcoes: ["Sétima menor", "Oitava diminuta", "Sétima maior", "Oitava justa"], correta: 1 },
-{ nota1: "re#4", nota2: "re#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "re#4", nota2: "mib5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 3 },
-{ nota1: "re#4", nota2: "mi5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 0 },
-{ nota1: "re#4", nota2: "mi#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Décima diminuta"], correta: 1 },
-{ nota1: "mib4", nota2: "mib4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "mib4", nota2: "mi4", opcoes: ["Uníssono aumentado", "Segunda menor", "Uníssono justo", "Segunda menor"], correta: 0 },
-{ nota1: "mib4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 3 },
-{ nota1: "mib4", nota2: "fab4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Segunda aumentada"], correta: 1 },
-{ nota1: "mib4", nota2: "fa4", opcoes: ["Segunda menor", "Segunda aumentada", "Segunda maior", "Terça diminuta"], correta: 2 },
-{ nota1: "mib4", nota2: "fa#4", opcoes: ["Segunda maior", "Terça diminuta", "Terça menor", "Segunda aumentada"], correta: 3 },
-{ nota1: "mib4", nota2: "solb4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0 },
-{ nota1: "mib4", nota2: "sol4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "mib4", nota2: "sol#4", opcoes: ["Terça maior", "Quarta diminuta", "Terça aumentada", "Quarta justa"], correta: 2 },
-{ nota1: "mib4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "mib4", nota2: "la4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "mib4", nota2: "la#4", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quarta dobrada aumentada"], correta: 3 },
-{ nota1: "mib4", nota2: "sib4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "mib4", nota2: "si4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "mib4", nota2: "si#4", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta dobrada aumentada"], correta: 3 },
-{ nota1: "mib4", nota2: "dob5", opcoes: ["Quinta justa", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2 },
-{ nota1: "mib4", nota2: "do5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0 },
-{ nota1: "mib4", nota2: "do#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "mib4", nota2: "reb5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "mib4", nota2: "re5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0 },
-{ nota1: "mib4", nota2: "re#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1 },
-{ nota1: "mib4", nota2: "mib5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "mib4", nota2: "mi5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3 },
-{ nota1: "mib4", nota2: "mi#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava dobrada aumentada"], correta: 3 },
-{ nota1: "mib4", nota2: "fab5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
-{ nota1: "mib4", nota2: "fa5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3 },
-{ nota1: "mib4", nota2: "fa#5", opcoes: ["Nona aumentada", "Nona maior", "Décima diminuta", "Décima menor"], correta: 0 },
-{ nota1: "mi4", nota2: "mib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "mi4", nota2: "mi4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "mi4", nota2: "mi#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3 },
-{ nota1: "mi4", nota2: "fab4", opcoes: ["Uníssono diminuto", "Segunda menor", "Segunda diminuta", "Uníssono aumentado"], correta: 2 },
-{ nota1: "mi4", nota2: "fa4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono dobrado aumentado"], correta: 1 },
-{ nota1: "mi4", nota2: "fa#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 0 },
-{ nota1: "mi4", nota2: "solb4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Terça diminuta"], correta: 3 },
-{ nota1: "mi4", nota2: "sol4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0 },
-{ nota1: "mi4", nota2: "sol#4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "mi4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "mi4", nota2: "la4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "mi4", nota2: "la#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "mi4", nota2: "sib4", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta diminuta"], correta: 3 },
-{ nota1: "mi4", nota2: "si4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "mi4", nota2: "si#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "mi4", nota2: "dob5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2 },
-{ nota1: "mi4", nota2: "do5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "mi4", nota2: "do#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0 },
-{ nota1: "mi4", nota2: "reb5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2 },
-{ nota1: "mi4", nota2: "re5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "mi4", nota2: "re#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0 },
-{ nota1: "mi4", nota2: "mib5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 3 },
-{ nota1: "mi4", nota2: "mi5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "mi4", nota2: "mi#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3 },
-{ nota1: "mi4", nota2: "fab5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 3 },
-{ nota1: "mi4", nota2: "fa5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
-{ nota1: "mi4", nota2: "fa#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3 },
-{ nota1: "mi#4", nota2: "mib4", opcoes: ["Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono justo", "Uníssono aumentado"], correta: 0 },
-{ nota1: "mi#4", nota2: "mi4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "mi#4", nota2: "mi#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "mi#4", nota2: "fab4", opcoes: ["Uníssono justo", "Segunda menor", "Segunda diminuta", "Segunda dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "fa4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono aumentado"], correta: 0 },
-{ nota1: "mi#4", nota2: "fa#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 1 },
-{ nota1: "mi#4", nota2: "solb4", opcoes: ["Segunda maior", "Terça maior", "Terça diminuta", "Terça dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "sol4", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 1 },
-{ nota1: "mi#4", nota2: "sol#4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta justa"], correta: 0 },
-{ nota1: "mi#4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "la4", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 2 },
-{ nota1: "mi#4", nota2: "la#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 0 },
-{ nota1: "mi#4", nota2: "sib4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "si4", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 2 },
-{ nota1: "mi#4", nota2: "si#4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 2 },
-{ nota1: "mi#4", nota2: "dob5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "do5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2 },
-{ nota1: "mi#4", nota2: "do#5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "mi#4", nota2: "reb5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sétima dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "re5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2 },
-{ nota1: "mi#4", nota2: "re#5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "mi#4", nota2: "mib5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava dobrada diminuta"], correta: 3 },
-{ nota1: "mi#4", nota2: "mi5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 2 },
-{ nota1: "mi#4", nota2: "mi#5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "mi#4", nota2: "fab5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona dobrada diminuta", "Oitava aumentada"], correta: 2 },
-{ nota1: "mi#4", nota2: "fa5", opcoes: ["Oitava justa", "Nona diminuta", "Nona maior", "Oitava aumentada"], correta: 1 },
-{ nota1: "mi#4", nota2: "fa#5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
-{ nota1: "fab4", nota2: "fab4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3 },
-{ nota1: "fab4", nota2: "fa4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "fab4", nota2: "fa#4", opcoes: ["Uníssono justo", "Uníssono dobrado aumentado", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "fab4", nota2: "solb4", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 3 },
-{ nota1: "fab4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda aumentada", "Segunda maior"], correta: 2 },
-{ nota1: "fab4", nota2: "sol#4", opcoes: ["Segunda aumentada", "Segunda maior", "Terça diminuta", "Segunda dobrada aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "lab4", opcoes: ["Segunda aumentada", "Terça diminuta", "Terça menor", "Terça maior"], correta: 3 },
-{ nota1: "fab4", nota2: "la4", opcoes: ["Terça diminuta", "Terça maior", "Terça aumentada", "Quarta diminuta"], correta: 2 },
-{ nota1: "fab4", nota2: "la#4", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça dobrada aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "sib4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Terça aumentada"], correta: 2 },
-{ nota1: "fab4", nota2: "si4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 2 },
-{ nota1: "fab4", nota2: "si#4", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta tripla aumentada", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "fab4", nota2: "dob5", opcoes: ["Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 1 },
-{ nota1: "fab4", nota2: "do5", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "do#5", opcoes: ["Quinta justa", "Quinta aumentada", "Quinta diminuta", "Quinta dobrada aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "reb5", opcoes: ["Quinta justa", "Sexta diminuta", "Sexta maior", "Sexta menor"], correta: 2 },
-{ nota1: "fab4", nota2: "re5", opcoes: ["Sexta menor", "Sexta maior", "Sexta aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "fab4", nota2: "re#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sexta dobrada aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "mib5", opcoes: ["Sexta menor", "Sétima maior", "Sexta aumentada", "Sétima menor"], correta: 1 },
-{ nota1: "fab4", nota2: "mi5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima aumentada", "Sexta aumentada"], correta: 2 },
-{ nota1: "fab4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima dobrada aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "fab5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "fab4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2 },
-{ nota1: "fab4", nota2: "fa#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava mais que aumentada", "Nona maior"], correta: 2 },
-{ nota1: "fab4", nota2: "solb5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 3 },
-{ nota1: "fab4", nota2: "sol5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 3 },
-{ nota1: "fab4", nota2: "sol#5", opcoes: ["Nona menor", "Nona aumentada", "Nona mais que aumentada", "Nona diminuta"], correta: 2 },
-{ nota1: "fa4", nota2: "fab4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 2 },
-{ nota1: "fa4", nota2: "fa4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3 },
-{ nota1: "fa4", nota2: "fa#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "fa4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 3 },
-{ nota1: "fa4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda aumentada", "Segunda maior", "Uníssono dobrado aumentado"], correta: 2 },
-{ nota1: "fa4", nota2: "sol#4", opcoes: ["Segunda maior", "Segunda diminuta", "Terça diminuta", "Segunda aumentada"], correta: 3 },
-{ nota1: "fa4", nota2: "lab4", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Segunda aumentada"], correta: 1 },
-{ nota1: "fa4", nota2: "la4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 1 },
-{ nota1: "fa4", nota2: "la#4", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça aumentada"], correta: 3 },
-{ nota1: "fa4", nota2: "sib4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Terça aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "fa4", nota2: "si4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "fa4", nota2: "si#4", opcoes: ["Quarta justa", "Quarta dobrada aumentada", "Quarta aumentada", "Quinta diminuta"], correta: 1 },
-{ nota1: "fa4", nota2: "dob5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "fa4", nota2: "do5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta aumentada", "Quinta justa"], correta: 3 },
-{ nota1: "fa4", nota2: "do#5", opcoes: ["Quinta aumentada", "Quinta justa", "Quinta diminuta", "Sexta diminuta"], correta: 0 },
-{ nota1: "fa4", nota2: "reb5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3 },
-{ nota1: "fa4", nota2: "re5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Quinta aumentada"], correta: 1 },
-{ nota1: "fa4", nota2: "re#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "fa4", nota2: "mib5", opcoes: ["Sétima diminuta", "Sétima menor", "Sexta aumentada", "Sétima maior"], correta: 1 },
-{ nota1: "fa4", nota2: "mi5", opcoes: ["Sétima menor", "Sétima maior", "Sétima diminuta", "Sexta aumentada"], correta: 1 },
-{ nota1: "fa4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1 },
-{ nota1: "fa4", nota2: "fab5", opcoes: ["Oitava justa", "Oitava aumentada", "Nona menor", "Oitava diminuta"], correta: 3 },
-{ nota1: "fa4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 0 },
-{ nota1: "fa4", nota2: "fa#5", opcoes: ["Oitava justa", "Oitava aumentada", "Oitava diminuta", "Nona menor"], correta: 1 },
-{ nota1: "fa4", nota2: "solb5", opcoes: ["Oitava aumentada", "Nona menor", "Nona maior", "Oitava diminuta"], correta: 1 },
-{ nota1: "fa4", nota2: "sol5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1 },
-{ nota1: "fa4", nota2: "sol#5", opcoes: ["Nona aumentada", "Nona maior", "Nona diminuta", "Décima diminuta"], correta: 0 },
-{ nota1: "fa#4", nota2: "fab4", opcoes: ["Uníssono justo", "Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono aumentado"], correta: 1 },
-{ nota1: "fa#4", nota2: "fa4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 2 },
-{ nota1: "fa#4", nota2: "fa#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3 },
-{ nota1: "fa#4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda diminuta"], correta: 3 },
-{ nota1: "fa#4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono dobrado aumentado"], correta: 1 },
-{ nota1: "fa#4", nota2: "sol#4", opcoes: ["Segunda maior", "Segunda diminuta", "Segunda aumentada", "Terça diminuta"], correta: 0 },
-{ nota1: "fa#4", nota2: "lab4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 2 },
-{ nota1: "fa#4", nota2: "la4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0 },
-{ nota1: "fa#4", nota2: "la#4", opcoes: ["Terça diminuta", "Terça aumentada", "Terça maior", "Quarta justa"], correta: 2 },
-{ nota1: "fa#4", nota2: "sib4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1 },
-{ nota1: "fa#4", nota2: "si4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "fa#4", nota2: "si#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "fa#4", nota2: "dob5", opcoes: ["Quarta justa", "Quinta dobrada diminuta", "Quarta aumentada", "Quinta justa"], correta: 1 },
-{ nota1: "fa#4", nota2: "do5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 2 },
-{ nota1: "fa#4", nota2: "do#5", opcoes: ["Quinta diminuta", "Quinta aumentada", "Sexta diminuta", "Quinta justa"], correta: 3 },
-{ nota1: "fa#4", nota2: "reb5", opcoes: ["Sexta diminuta", "Sexta menor", "Quinta aumentada", "Sexta maior"], correta: 0 },
-{ nota1: "fa#4", nota2: "re5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 1 },
-{ nota1: "fa#4", nota2: "re#5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta maior", "Sétima menor"], correta: 2 },
-{ nota1: "fa#4", nota2: "mib5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 1 },
-{ nota1: "fa#4", nota2: "mi5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Oitava diminuta"], correta: 1 },
-{ nota1: "fa#4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima maior", "Oitava diminuta", "Sétima aumentada"], correta: 1 },
-{ nota1: "fa#4", nota2: "fab5", opcoes: ["Oitava dobrada diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 0 },
-{ nota1: "fa#4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona maior", "Oitava aumentada"], correta: 1 },
-{ nota1: "fa#4", nota2: "fa#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 0 },
-{ nota1: "fa#4", nota2: "solb5", opcoes: ["Oitava justa", "Nona diminuta", "Nona menor", "Oitava aumentada"], correta: 1 },
-{ nota1: "fa#4", nota2: "sol5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 0 },
-{ nota1: "fa#4", nota2: "sol#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3 },
-{ nota1: "solb4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "solb4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "solb4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 2 },
-{ nota1: "solb4", nota2: "lab4", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 3 },
-{ nota1: "solb4", nota2: "la4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0 },
-{ nota1: "solb4", nota2: "la#4", opcoes: ["Segunda maior", "Segunda dobrada aumentada", "Segunda aumentada", "Terça menor"], correta: 1 },
-{ nota1: "solb4", nota2: "sib4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 3 },
-{ nota1: "solb4", nota2: "si4", opcoes: ["Terça menor", "Terça diminuta", "Quarta diminuta", "Terça aumentada"], correta: 3 },
-{ nota1: "solb4", nota2: "si#4", opcoes: ["Terça dobrada aumentada", "Terça aumentada", "Terça menor", "Quarta diminuta"], correta: 0 },
-{ nota1: "solb4", nota2: "dob5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2 },
-{ nota1: "solb4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Quarta dobrada aumentada"], correta: 1 },
-{ nota1: "solb4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 3 },
-{ nota1: "solb4", nota2: "reb5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "solb4", nota2: "re5", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 3 },
-{ nota1: "solb4", nota2: "re#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta dobrada aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "solb4", nota2: "mib5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 3 },
-{ nota1: "solb4", nota2: "mi5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Sexta aumentada"], correta: 3 },
-{ nota1: "solb4", nota2: "mi#5", opcoes: ["Sexta diminuta", "Sexta dobrada aumentada", "Sexta maior", "Sétima diminuta"], correta: 1 },
-{ nota1: "solb4", nota2: "fab5", opcoes: ["Sexta maior", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 3 },
-{ nota1: "solb4", nota2: "fa5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2 },
-{ nota1: "solb4", nota2: "fa#5", opcoes: ["Sétima maior", "Sétima menor", "Sétima aumentada", "Oitava diminuta"], correta: 2 },
-{ nota1: "solb4", nota2: "solb5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "solb4", nota2: "sol5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2 },
-{ nota1: "solb4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava dobrada aumentada"], correta: 3 },
-{ nota1: "solb4", nota2: "lab5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1 },
-{ nota1: "solb4", nota2: "la5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 1 },
-{ nota1: "solb4", nota2: "la#5", opcoes: ["Nona maior", "Nona diminuta", "Nona dobrada aumentada", "Décima diminuta"], correta: 2 },
-{ nota1: "sol4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3 },
-{ nota1: "sol4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "sol4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "sol4", nota2: "lab4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 3 },
-{ nota1: "sol4", nota2: "la4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "sol4", nota2: "la#4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0 },
-{ nota1: "sol4", nota2: "sib4", opcoes: ["Segunda maior", "Terça menor", "Segunda menor", "Terça diminuta"], correta: 1 },
-{ nota1: "sol4", nota2: "si4", opcoes: ["Segunda maior", "Terça menor", "Terça maior", "Terça diminuta"], correta: 2 },
-{ nota1: "sol4", nota2: "si#4", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça aumentada"], correta: 3 },
-{ nota1: "sol4", nota2: "dob5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1 },
-{ nota1: "sol4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 1 },
-{ nota1: "sol4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 2 },
-{ nota1: "sol4", nota2: "reb5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 2 },
-{ nota1: "sol4", nota2: "re5", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0 },
-{ nota1: "sol4", nota2: "re#5", opcoes: ["Quinta diminuta", "Quinta aumentada", "Quinta justa", "Sexta diminuta"], correta: 1 },
-{ nota1: "sol4", nota2: "mib5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3 },
-{ nota1: "sol4", nota2: "mi5", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1 },
-{ nota1: "sol4", nota2: "mi#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 2 },
-{ nota1: "sol4", nota2: "fab5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 1 },
-{ nota1: "sol4", nota2: "fa5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 2 },
-{ nota1: "sol4", nota2: "fa#5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 3 },
-{ nota1: "sol4", nota2: "solb5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0 },
-{ nota1: "sol4", nota2: "sol5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "sol4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2 },
-{ nota1: "sol4", nota2: "lab5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 1 },
-{ nota1: "sol4", nota2: "la5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1 },
-{ nota1: "sol4", nota2: "la#5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 1 },
-{ nota1: "sol#4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono dobrado diminuto", "Segunda menor"], correta: 2 },
-{ nota1: "sol#4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3 },
-{ nota1: "sol#4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0 },
-{ nota1: "sol#4", nota2: "lab4", opcoes: ["Uníssono justo", "Segunda diminuta", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "sol#4", nota2: "la4", opcoes: ["Segunda maior", "Segunda diminuta", "Segunda menor", "Uníssono dobrado aumentado"], correta: 2 },
-{ nota1: "sol#4", nota2: "la#4", opcoes: ["Segunda menor", "Segunda diminuta", "Segunda aumentada", "Segunda maior"], correta: 3 },
-{ nota1: "sol#4", nota2: "sib4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 3 },
-{ nota1: "sol#4", nota2: "si4", opcoes: ["Segunda maior", "Terça menor", "Terça maior", "Terça diminuta"], correta: 1 },
-{ nota1: "sol#4", nota2: "si#4", opcoes: ["Terça menor", "Terça diminuta", "Terça maior", "Terça aumentada"], correta: 2 },
-{ nota1: "sol#4", nota2: "dob5", opcoes: ["Terça maior", "Quarta dobrada diminuta", "Quarta justa", "Quarta aumentada"], correta: 1 },
-{ nota1: "sol#4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 0 },
-{ nota1: "sol#4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "sol#4", nota2: "reb5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta dobrada diminuta", "Quinta justa"], correta: 2 },
-{ nota1: "sol#4", nota2: "re5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta aumentada", "Quinta justa"], correta: 0 },
-{ nota1: "sol#4", nota2: "re#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0 },
-{ nota1: "sol#4", nota2: "mib5", opcoes: ["Quinta justa", "Quinta aumentada", "Sexta diminuta", "Sexta menor"], correta: 2 },
-{ nota1: "sol#4", nota2: "mi5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2 },
-{ nota1: "sol#4", nota2: "mi#5", opcoes: ["Sexta menor", "Sexta maior", "Sexta aumentada", "Sétima diminuta"], correta: 1 },
-{ nota1: "sol#4", nota2: "fab5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima dobrada diminuta"], correta: 3 },
-{ nota1: "sol#4", nota2: "fa5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 1 },
-{ nota1: "sol#4", nota2: "fa#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 2 },
-{ nota1: "sol#4", nota2: "solb5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava dobrada diminuta", "Sétima maior"], correta: 2 },
-{ nota1: "sol#4", nota2: "sol5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0 },
-{ nota1: "sol#4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava aumentada", "Oitava diminuta", "Nona menor"], correta: 0 },
-{ nota1: "sol#4", nota2: "lab5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona diminuta"], correta: 3 },
-{ nota1: "sol#4", nota2: "la5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 1 },
-{ nota1: "sol#4", nota2: "la#5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1 },
-{ nota1: "lab4", nota2: "lab4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "lab4", nota2: "la4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2 },
-{ nota1: "lab4", nota2: "la#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Uníssono dobrado aumentado"], correta: 3 },
-{ nota1: "lab4", nota2: "sib4", opcoes: ["Uníssono aumentado", "Segunda menor", "Segunda maior", "Segunda diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "si4", opcoes: ["Segunda menor", "Segunda maior", "Segunda aumentada", "Segunda diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda dobrada aumentada", "Terça diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "dob5", opcoes: ["Segunda aumentada", "Terça maior", "Terça diminuta", "Terça menor"], correta: 3 },
-{ nota1: "lab4", nota2: "do5", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Quarta diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "do#5", opcoes: ["Terça menor", "Terça aumentada", "Terça diminuta", "Quarta diminuta"], correta: 1 },
-{ nota1: "lab4", nota2: "reb5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2 },
-{ nota1: "lab4", nota2: "re5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 2 },
-{ nota1: "lab4", nota2: "re#5", opcoes: ["Quarta dobrada aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "lab4", nota2: "mib5", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta aumentada", "Quinta justa"], correta: 3 },
-{ nota1: "lab4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 3 },
-{ nota1: "lab4", nota2: "mi#5", opcoes: ["Quinta diminuta", "Quinta justa", "Quinta dobrada aumentada", "Sexta diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "fab5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2 },
-{ nota1: "lab4", nota2: "fa5", opcoes: ["Sexta diminuta", "Sexta menor", "Sexta maior", "Sexta aumentada"], correta: 2 },
-{ nota1: "lab4", nota2: "fa#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sexta maior", "Sétima diminuta"], correta: 1 },
-{ nota1: "lab4", nota2: "solb5", opcoes: ["Sexta maior", "Sétima menor", "Sétima diminuta", "Sétima maior"], correta: 1 },
-{ nota1: "lab4", nota2: "sol5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 2 },
-{ nota1: "lab4", nota2: "sol#5", opcoes: ["Sétima menor", "Sétima maior", "Sétima aumentada", "Oitava diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "lab5", opcoes: ["Sétima maior", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "lab4", nota2: "la5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3 },
-{ nota1: "lab4", nota2: "la#5", opcoes: ["Oitava dobrada aumentada", "Oitava justa", "Nona menor", "Nona maior"], correta: 0 },
-{ nota1: "lab4", nota2: "sib5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 2 },
-{ nota1: "lab4", nota2: "si5", opcoes: ["Nona menor", "Nona diminuta", "Nona maior", "Nona aumentada"], correta: 3 },
-{ nota1: "lab4", nota2: "si#5", opcoes: ["Nona maior", "Nona diminuta", "Nona dobrada aumentada", "Décima diminuta"], correta: 2 },
-{ nota1: "la4", nota2: "lab4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0 },
-{ nota1: "la4", nota2: "la4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "la4", nota2: "la#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2 },
-{ nota1: "la4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 2 },
-{ nota1: "la4", nota2: "si4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "la4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda menor", "Terça diminuta"], correta: 1 },
-{ nota1: "la4", nota2: "dob5", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 2 },
-{ nota1: "la4", nota2: "do5", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 3 },
-{ nota1: "la4", nota2: "do#5", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta justa"], correta: 0 },
-{ nota1: "la4", nota2: "reb5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "la4", nota2: "re5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 0 },
-{ nota1: "la4", nota2: "re#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 3 },
-{ nota1: "la4", nota2: "mib5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 3 },
-{ nota1: "la4", nota2: "mi5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 3 },
-{ nota1: "la4", nota2: "mi#5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 3 },
-{ nota1: "la4", nota2: "fab5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 3 },
-{ nota1: "la4", nota2: "fa5", opcoes: ["Sexta menor", "Sexta diminuta", "Sexta maior", "Quinta aumentada"], correta: 0 },
-{ nota1: "la4", nota2: "fa#5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Sexta aumentada"], correta: 1 },
-{ nota1: "la4", nota2: "solb5", opcoes: ["Sexta maior", "Sexta diminuta", "Sétima diminuta", "Sexta menor"], correta: 2 },
-{ nota1: "la4", nota2: "sol5", opcoes: ["Sétima diminuta", "Sétima maior", "Sétima menor", "Sexta aumentada"], correta: 2 },
-{ nota1: "la4", nota2: "sol#5", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Oitava diminuta"], correta: 0 },
-{ nota1: "la4", nota2: "lab5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "la4", nota2: "la5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "la4", nota2: "la#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3 },
-{ nota1: "la4", nota2: "sib5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
-{ nota1: "la4", nota2: "si5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Nona diminuta"], correta: 1 },
-{ nota1: "la4", nota2: "si#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 2 },
-{ nota1: "la#4", nota2: "lab4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Uníssono dobrado diminuto"], correta: 3 },
-{ nota1: "la#4", nota2: "la4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0 },
-{ nota1: "la#4", nota2: "la#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1 },
-{ nota1: "la#4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda diminuta", "Segunda menor"], correta: 2 },
-{ nota1: "la#4", nota2: "si4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 0 },
-{ nota1: "la#4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0 },
-{ nota1: "la#4", nota2: "dob5", opcoes: ["Segunda maior", "Segunda diminuta", "Terça dobrada diminuta", "Segunda aumentada"], correta: 2 },
-{ nota1: "la#4", nota2: "do5", opcoes: ["Terça maior", "Segunda aumentada", "Terça diminuta", "Terça menor"], correta: 2 },
-{ nota1: "la#4", nota2: "do#5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 2 },
-{ nota1: "la#4", nota2: "reb5", opcoes: ["Terça maior", "Terça menor", "Quarta dobrada diminuta", "Terça diminuta"], correta: 2 },
-{ nota1: "la#4", nota2: "re5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "la#4", nota2: "re#5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 0 },
-{ nota1: "la#4", nota2: "mib5", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta dobrada diminuta"], correta: 3 },
-{ nota1: "la#4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 3 },
-{ nota1: "la#4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 3 },
-{ nota1: "la#4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quinta dobrada diminuta", "Quinta justa", "Quinta aumentada"], correta: 1 },
-{ nota1: "la#4", nota2: "fa5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 3 },
-{ nota1: "la#4", nota2: "fa#5", opcoes: ["Sexta diminuta", "Sexta menor", "Sexta maior", "Quinta aumentada"], correta: 1 },
-{ nota1: "la#4", nota2: "solb5", opcoes: ["Sexta menor", "Sexta maior", "Sexta dobrada diminuta", "Sexta aumentada"], correta: 2 },
-{ nota1: "la#4", nota2: "sol5", opcoes: ["Sexta maior", "Sexta diminuta", "Sétima diminuta", "Sexta menor"], correta: 2 },
-{ nota1: "la#4", nota2: "sol#5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 1 },
-{ nota1: "la#4", nota2: "lab5", opcoes: ["Sétima maior", "Sétima dobrada diminuta", "Sétima menor", "Oitava diminuta"], correta: 1 },
-{ nota1: "la#4", nota2: "la5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "la#4", nota2: "la#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "la#4", nota2: "sib5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona diminuta", "Oitava aumentada"], correta: 2 },
-{ nota1: "la#4", nota2: "si5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
-{ nota1: "la#4", nota2: "si#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Nona diminuta"], correta: 1 },
-{ nota1: "sib4", nota2: "sib4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "sib4", nota2: "si4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3 },
-{ nota1: "sib4", nota2: "si#4", opcoes: ["Uníssono dobrado aumentado", "Uníssono aumentado", "Uníssono justo", "Segunda menor"], correta: 0 },
-{ nota1: "sib4", nota2: "dob5", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 2 },
-{ nota1: "sib4", nota2: "do5", opcoes: ["Segunda diminuta", "Segunda aumentada", "Segunda maior", "Segunda menor"], correta: 2 },
-{ nota1: "sib4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Terça diminuta", "Segunda aumentada"], correta: 3 },
-{ nota1: "sib4", nota2: "reb5", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Segunda aumentada"], correta: 1 },
-{ nota1: "sib4", nota2: "re5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 1 },
-{ nota1: "sib4", nota2: "re#5", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça aumentada"], correta: 3 },
-{ nota1: "sib4", nota2: "mib5", opcoes: ["Quarta diminuta", "Quarta aumentada", "Terça aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "sib4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "sib4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta dobrada aumentada", "Quarta aumentada", "Quinta diminuta"], correta: 1 },
-{ nota1: "sib4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 3 },
-{ nota1: "sib4", nota2: "fa5", opcoes: ["Quarta dobrada aumentada", "Quinta diminuta", "Quinta aumentada", "Quinta justa"], correta: 3 },
-{ nota1: "sib4", nota2: "fa#5", opcoes: ["Quinta aumentada", "Quinta justa", "Quinta diminuta", "Sexta diminuta"], correta: 0 },
-{ nota1: "sib4", nota2: "solb5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3 },
-{ nota1: "sib4", nota2: "sol5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Quinta aumentada"], correta: 1 },
-{ nota1: "sib4", nota2: "sol#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "sib4", nota2: "lab5", opcoes: ["Sétima diminuta", "Sétima menor", "Sexta aumentada", "Sétima maior"], correta: 1 },
-{ nota1: "sib4", nota2: "la5", opcoes: ["Sétima menor", "Sétima maior", "Sétima diminuta", "Sexta aumentada"], correta: 1 },
-{ nota1: "sib4", nota2: "la#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1 },
-{ nota1: "sib4", nota2: "sib5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Nona menor", "Oitava justa"], correta: 3 },
-{ nota1: "sib4", nota2: "si5", opcoes: ["Oitava aumentada", "Oitava justa", "Oitava diminuta", "Nona menor"], correta: 0 },
-{ nota1: "sib4", nota2: "si#5", opcoes: ["Oitava justa", "Oitava dobrada aumentada", "Oitava aumentada", "Nona menor"], correta: 1 },
-{ nota1: "sib4", nota2: "dob6", opcoes: ["Oitava aumentada", "Nona diminuta", "Nona menor", "Nona maior"], correta: 2 },
-{ nota1: "sib4", nota2: "do6", opcoes: ["Nona diminuta", "Nona menor", "Nona aumentada", "Nona maior"], correta: 3 },
-{ nota1: "sib4", nota2: "do#6", opcoes: ["Nona aumentada", "Nona maior", "Nona diminuta", "Décima diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "si4", nota2: "si4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "si4", nota2: "si#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3 },
-{ nota1: "si4", nota2: "dob5", opcoes: ["Segunda diminuta", "Segunda menor", "Uníssono diminuto", "Uníssono aumentado"], correta: 0 },
-{ nota1: "si4", nota2: "do5", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono dobrado aumentado"], correta: 1 },
-{ nota1: "si4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "reb5", opcoes: ["Segunda maior", "Segunda menor", "Terça diminuta", "Segunda aumentada"], correta: 2 },
-{ nota1: "si4", nota2: "re5", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "re#5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "si4", nota2: "mib5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "si4", nota2: "mi5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3 },
-{ nota1: "si4", nota2: "mi#5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "fab5", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta dobrada diminuta"], correta: 3 },
-{ nota1: "si4", nota2: "fa5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 1 },
-{ nota1: "si4", nota2: "fa#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "solb5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2 },
-{ nota1: "si4", nota2: "sol5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "si4", nota2: "sol#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0 },
-{ nota1: "si4", nota2: "lab5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2 },
-{ nota1: "si4", nota2: "la5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "si4", nota2: "la#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0 },
-{ nota1: "si4", nota2: "sib5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 3 },
-{ nota1: "si4", nota2: "si5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "si4", nota2: "si#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3 },
-{ nota1: "si4", nota2: "dob6", opcoes: ["Oitava justa", "Nona diminuta", "Nona menor", "Oitava aumentada"], correta: 1 },
-{ nota1: "si4", nota2: "do6", opcoes: ["Nona menor", "Nona diminuta", "Nona maior", "Nona aumentada"], correta: 0 },
-{ nota1: "si4", nota2: "do#6", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3 },
-{ nota1: "si#4", nota2: "sib4", opcoes: ["Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono justo", "Uníssono aumentado"], correta: 0 },
-{ nota1: "si#4", nota2: "si4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1 },
-{ nota1: "si#4", nota2: "si#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2 },
-{ nota1: "si#4", nota2: "dob5", opcoes: ["Uníssono justo", "Segunda menor", "Segunda dobrada diminuta", "Uníssono aumentado"], correta: 2 },
-{ nota1: "si#4", nota2: "do5", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono aumentado"], correta: 0 },
-{ nota1: "si#4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 1 },
-{ nota1: "si#4", nota2: "reb5", opcoes: ["Segunda maior", "Terça maior", "Terça dobrada diminuta", "Segunda aumentada"], correta: 2 },
-{ nota1: "si#4", nota2: "re5", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 1 },
-{ nota1: "si#4", nota2: "re#5", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta justa"], correta: 0 },
-{ nota1: "si#4", nota2: "mib5", opcoes: ["Terça maior", "Quarta dobrada diminuta", "Terça menor", "Quarta justa"], correta: 1 },
-{ nota1: "si#4", nota2: "mi5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 2 },
-{ nota1: "si#4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 0 },
-{ nota1: "si#4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta triplo diminuta"], correta: 3 },
-{ nota1: "si#4", nota2: "fa5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta dobrada diminuta", "Quinta justa"], correta: 2 },
-{ nota1: "si#4", nota2: "fa#5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 1 },
-{ nota1: "si#4", nota2: "solb5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta dobrada diminuta"], correta: 3 },
-{ nota1: "si#4", nota2: "sol5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2 },
-{ nota1: "si#4", nota2: "sol#5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1 },
-{ nota1: "si#4", nota2: "lab5", opcoes: ["Sexta maior", "Sexta menor", "Sétima dobrada diminuta", "Sexta aumentada"], correta: 2 },
-{ nota1: "si#4", nota2: "la5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2 },
-{ nota1: "si#4", nota2: "la#5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0 },
-{ nota1: "si#4", nota2: "sib5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava dobrada diminuta"], correta: 3 },
-{ nota1: "si#4", nota2: "si5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 2 },
-{ nota1: "si#4", nota2: "si#5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2 },
-{ nota1: "si#4", nota2: "dob6", opcoes: ["Nona dobrada diminuta", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 0 },
-{ nota1: "si#4", nota2: "do6", opcoes: ["Oitava justa", "Nona diminuta", "Nona maior", "Oitava aumentada"], correta: 1 },
-{ nota1: "si#4", nota2: "do#6", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0 },
+const perguntas = [
+{ nota1: "dob4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 2 },
+{ nota1: "dob4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "dob4", nota2: "do#4", opcoes: ["Segunda maior", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 2, nivel: 4 },
+{ nota1: "dob4", nota2: "reb4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 3, nivel: 2 },
+{ nota1: "dob4", nota2: "re4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Uníssono dobrado aumentado"], correta: 0, nivel: 3 },
+{ nota1: "dob4", nota2: "re#4", opcoes: ["Segunda maior", "Segunda dobrada aumentada", "Segunda aumentada", "Terça menor"], correta: 1, nivel: 4 },
+{ nota1: "dob4", nota2: "mib4", opcoes: ["Segunda aumentada", "Terça menor", "Segunda dobrada aumentada", "Terça maior"], correta: 3, nivel: 2 },
+{ nota1: "dob4", nota2: "mi4", opcoes: ["Terça maior", "Terça diminuta", "Quarta justa", "Terça aumentada"], correta: 3, nivel: 3 },
+{ nota1: "dob4", nota2: "mi#4", opcoes: ["Terça dobrada aumentada", "Terça menor", "Terça aumentada", "Terça maior"], correta: 0, nivel: 4 },
+{ nota1: "dob4", nota2: "fab4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça maior"], correta: 1, nivel: 2 },
+{ nota1: "dob4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Terça aumentada"], correta: 1, nivel: 3 },
+{ nota1: "dob4", nota2: "fa#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "dob4", nota2: "solb4", opcoes: ["Quinta justa", "Quarta aumentada", "Quinta diminuta", "Quarta justa"], correta: 0, nivel: 2 },
+{ nota1: "dob4", nota2: "sol4", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "dob4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta dobrada aumentada", "Quinta aumentada"], correta: 2, nivel: 4 },
+{ nota1: "dob4", nota2: "lab4", opcoes: ["Sexta menor", "Sexta aumentada", "Quinta aumentada", "Sexta maior"], correta: 3, nivel: 2 },
+{ nota1: "dob4", nota2: "la4", opcoes: ["Sexta aumentada", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "dob4", nota2: "la#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "dob4", nota2: "sib4", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "dob4", nota2: "si4", opcoes: ["Sétima maior", "Sétima menor", "Sexta aumentada", "Sétima aumentada"], correta: 3, nivel: 3 },
+{ nota1: "dob4", nota2: "si#4", opcoes: ["Sétima maior", "Sétima menor", "Sétima aumentada", "Sétima dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "dob4", nota2: "dob5", opcoes: ["Oitava aumentada", "Oitava justa", "Oitava diminuta", "Sétima aumentada"], correta: 1, nivel: 2 },
+{ nota1: "dob4", nota2: "do5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2, nivel: 3 },
+{ nota1: "dob4", nota2: "do#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "dob4", nota2: "reb5", opcoes: ["Nona menor", "Nona maior", "Oitava aumentada", "Nona diminuta"], correta: 1, nivel: 2 },
+{ nota1: "dob4", nota2: "re5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 2, nivel: 3 },
+{ nota1: "dob4", nota2: "re#5", opcoes: ["nona dobrada aumentada", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 0, nivel: 4 },
+{ nota1: "do4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3, nivel: 3 },
+{ nota1: "do4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 1 },
+{ nota1: "do4", nota2: "do#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "do4", nota2: "reb4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 2, nivel: 3 },
+{ nota1: "do4", nota2: "re4", opcoes: ["Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado", "Segunda maior"], correta: 3, nivel: 1 },
+{ nota1: "do4", nota2: "re#4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda dobrada aumentada", "Terça menor"], correta: 0, nivel: 3 },
+{ nota1: "do4", nota2: "mib4", opcoes: ["Terça maior", "Segunda aumentada", "Terça menor", "Segunda dobrada aumentada"], correta: 2, nivel: 3 },
+{ nota1: "do4", nota2: "mi4", opcoes: ["Terça aumentada", "Terça diminuta", "Terça maior", "Quarta justa"], correta: 2, nivel: 1 },
+{ nota1: "do4", nota2: "mi#4", opcoes: ["Terça maior", "Terça menor", "Quarta diminuta", "Terça aumentada"], correta: 3, nivel: 3 },
+{ nota1: "do4", nota2: "fab4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça maior"], correta: 0, nivel: 3 },
+{ nota1: "do4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça aumentada"], correta: 1, nivel: 1 },
+{ nota1: "do4", nota2: "fa#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "do4", nota2: "solb4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quarta dobrada aumentada", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "do4", nota2: "sol4", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "do4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta aumentada", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do4", nota2: "lab4", opcoes: ["Sexta maior", "Sexta diminuta", "Sexta menor", "Quinta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "do4", nota2: "la4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1, nivel: 1 },
+{ nota1: "do4", nota2: "la#4", opcoes: ["Sexta aumentada", "Sexta maior", "Sétima diminuta", "Sexta menor"], correta: 0, nivel: 3 },
+{ nota1: "do4", nota2: "sib4", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Sexta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do4", nota2: "si4", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2, nivel: 1 },
+{ nota1: "do4", nota2: "si#4", opcoes: ["Sétima maior", "Sétima menor", "Oitava diminuta", "Sétima aumentada"], correta: 3, nivel: 3 },
+{ nota1: "do4", nota2: "dob5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Sétima aumentada"], correta: 0, nivel: 3 },
+{ nota1: "do4", nota2: "do5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 1 },
+{ nota1: "do4", nota2: "do#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2, nivel: 3 },
+{ nota1: "do4", nota2: "reb5", opcoes: ["Nona maior", "Oitava aumentada", "Nona diminuta", "Nona menor"], correta: 3, nivel: 3 },
+{ nota1: "do4", nota2: "re5", opcoes: ["Nona maior", "Nona menor", "Nona aumentada", "Oitava aumentada"], correta: 0, nivel: 1 },
+{ nota1: "do4", nota2: "re#5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Oitava aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "dob4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono dobrado diminuto", "Segunda menor"], correta: 2, nivel: 4 },
+{ nota1: "do#4", nota2: "do4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "do#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 0, nivel: 2 },
+{ nota1: "do#4", nota2: "reb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Segunda diminuta"], correta: 3, nivel: 4 },
+{ nota1: "do#4", nota2: "re4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono aumentado"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "re#4", opcoes: ["Segunda menor", "Segunda aumentada", "Segunda diminuta", "Segunda maior"], correta: 3, nivel: 2 },
+{ nota1: "do#4", nota2: "mib4", opcoes: ["Terça diminuta", "Segunda menor", "Segunda diminuta", "Terça menor"], correta: 0, nivel: 4 },
+{ nota1: "do#4", nota2: "mi4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Segunda aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "mi#4", opcoes: ["Terça menor", "Terça aumentada", "Terça maior", "Quarta diminuta"], correta: 2, nivel: 2 },
+{ nota1: "do#4", nota2: "fab4", opcoes: ["Terça maior", "Quarta diminuta", "Segunda aumentada", "Quarta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "do#4", nota2: "fa4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Terça aumentada"], correta: 0, nivel: 3 },
+{ nota1: "do#4", nota2: "fa#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 1, nivel: 2 },
+{ nota1: "do#4", nota2: "solb4", opcoes: ["Quarta aumentada", "Quarta diminuta", "Quarta justa", "Quinta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "do#4", nota2: "sol4", opcoes: ["Quinta justa", "Quarta aumentada", "Quinta aumentada", "Quinta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "do#4", nota2: "sol#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Quarta dobrada aumentada"], correta: 0, nivel: 2 },
+{ nota1: "do#4", nota2: "lab4", opcoes: ["Sexta menor", "Sexta diminuta", "Sexta maior", "Quinta aumentada"], correta: 1, nivel: 4 },
+{ nota1: "do#4", nota2: "la4", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Quinta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "la#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 3, nivel: 2 },
+{ nota1: "do#4", nota2: "sib4", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 4 },
+{ nota1: "do#4", nota2: "si4", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Sexta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "do#4", nota2: "si#4", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 2, nivel: 2 },
+{ nota1: "do#4", nota2: "dob5", opcoes: ["Oitava justa", "Sétima aumentada", "Oitava dobrada diminuta", "Oitava diminuta"], correta: 2, nivel: 4 },
+{ nota1: "do#4", nota2: "do5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0, nivel: 3 },
+{ nota1: "do#4", nota2: "do#5", opcoes: ["Oitava aumentada", "Oitava justa", "Nona menor", "Oitava diminuta"], correta: 1, nivel: 2 },
+{ nota1: "do#4", nota2: "reb5", opcoes: ["Nona menor", "Nona diminuta", "Oitava aumentada", "Nona maior"], correta: 1, nivel: 4 },
+{ nota1: "do#4", nota2: "re5", opcoes: ["Nona maior", "Nona aumentada", "Oitava aumentada", "Nona menor"], correta: 3, nivel: 3 },
+{ nota1: "do#4", nota2: "re#5", opcoes: ["Nona maior", "Nona aumentada", "Nona menor", "Oitava aumentada"], correta: 0, nivel: 2 },
+{ nota1: "reb4", nota2: "reb4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 2 },
+{ nota1: "reb4", nota2: "re4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 1, nivel: 3 },
+{ nota1: "reb4", nota2: "re#4", opcoes: ["Segunda menor", "Segunda diminuta", "Segunda dobrada aumentada", "Uníssono dobrado aumentado"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "mib4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 2 },
+{ nota1: "reb4", nota2: "mi4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0, nivel: 3 },
+{ nota1: "reb4", nota2: "mi#4", opcoes: ["Segunda maior", "Terça diminuta", "Terça menor", "Segunda dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "fab4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 1, nivel: 2 },
+{ nota1: "reb4", nota2: "fa4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "reb4", nota2: "fa#4", opcoes: ["Terça menor", "Terça aumentada", "Terça maior", "Quarta justa"], correta: 1, nivel: 4 },
+{ nota1: "reb4", nota2: "solb4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "reb4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "reb4", nota2: "sol#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quarta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "lab4", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta aumentada", "Quinta justa"], correta: 3, nivel: 2 },
+{ nota1: "reb4", nota2: "la4", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "reb4", nota2: "la#4", opcoes: ["Quinta diminuta", "Quinta aumentada", "Sexta diminuta", "Quinta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "sib4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1, nivel: 2 },
+{ nota1: "reb4", nota2: "si4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 2, nivel: 3 },
+{ nota1: "reb4", nota2: "si#4", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sexta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "dob5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "reb4", nota2: "do5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Oitava diminuta"], correta: 2, nivel: 3 },
+{ nota1: "reb4", nota2: "do#5", opcoes: ["Sétima menor", "Sétima maior", "Oitava diminuta", "Sétima aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "reb5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "reb4", nota2: "re5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "reb4", nota2: "re#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "reb4", nota2: "mib5", opcoes: ["Nona maior", "Nona menor", "Nona aumentada", "Nona diminuta"], correta: 0, nivel: 2 },
+{ nota1: "reb4", nota2: "mi5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Décima diminuta"], correta: 1, nivel: 3 },
+{ nota1: "reb4", nota2: "mi#5", opcoes: ["Nona maior", "Décima diminuta", "Décima menor", "Nona dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "re4", nota2: "reb4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "re4", nota2: "re4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 1 },
+{ nota1: "re4", nota2: "re#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "re4", nota2: "mib4", opcoes: ["Segunda maior", "Uníssono aumentado", "Segunda diminuta", "Segunda menor"], correta: 3, nivel: 3 },
+{ nota1: "re4", nota2: "mi4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 1 },
+{ nota1: "re4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda menor", "Terça diminuta"], correta: 1, nivel: 3 },
+{ nota1: "re4", nota2: "fab4", opcoes: ["Segunda aumentada", "Terça menor", "Segunda diminuta", "Terça diminuta"], correta: 3, nivel: 3 },
+{ nota1: "re4", nota2: "fa4", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta diminuta"], correta: 1, nivel: 1 },
+{ nota1: "re4", nota2: "fa#4", opcoes: ["Terça maior", "Terça aumentada", "Terça menor", "Quarta justa"], correta: 0, nivel: 3 },
+{ nota1: "re4", nota2: "solb4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "re4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Quarta dobrada aumentada"], correta: 2, nivel: 1 },
+{ nota1: "re4", nota2: "sol#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "re4", nota2: "lab4", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada"], correta: 0, nivel: 3 },
+{ nota1: "re4", nota2: "la4", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 1, nivel: 1 },
+{ nota1: "re4", nota2: "la#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "re4", nota2: "sib4", opcoes: ["Sexta maior", "Quinta aumentada", "Sexta diminuta", "Sexta menor"], correta: 3, nivel: 3 },
+{ nota1: "re4", nota2: "si4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 0, nivel: 1 },
+{ nota1: "re4", nota2: "si#4", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sétima menor"], correta: 1, nivel: 3 },
+{ nota1: "re4", nota2: "dob5", opcoes: ["Sétima maior", "Sexta aumentada", "Sétima diminuta", "Sétima menor"], correta: 2, nivel: 3 },
+{ nota1: "re4", nota2: "do5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Oitava diminuta"], correta: 0, nivel: 1 },
+{ nota1: "re4", nota2: "do#5", opcoes: ["Sétima maior", "Sétima menor", "Oitava diminuta", "Sétima aumentada"], correta: 0, nivel: 3 },
+{ nota1: "re4", nota2: "reb5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 3 },
+{ nota1: "re4", nota2: "re5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 1 },
+{ nota1: "re4", nota2: "re#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "re4", nota2: "mib5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 0, nivel: 3 },
+{ nota1: "re4", nota2: "mi5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Décima diminuta"], correta: 1, nivel: 1 },
+{ nota1: "re4", nota2: "mi#5", opcoes: ["Nona maior", "Décima diminuta", "Nona aumentada", "Décima maior"], correta: 2, nivel: 3 },
+{ nota1: "re#4", nota2: "reb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Uníssono dobrado diminuto"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "re4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "re#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 2 },
+{ nota1: "re#4", nota2: "mib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "mi4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 2 },
+{ nota1: "re#4", nota2: "fab4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda diminuta", "Terça dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "fa4", opcoes: ["Terça maior", "Terça diminuta", "Terça menor", "Quarta diminuta"], correta: 1, nivel: 3 },
+{ nota1: "re#4", nota2: "fa#4", opcoes: ["Terça menor", "Terça aumentada", "Quarta justa", "Terça maior"], correta: 0, nivel: 2 },
+{ nota1: "re#4", nota2: "solb4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "sol4", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quinta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "sol#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 0, nivel: 2 },
+{ nota1: "re#4", nota2: "lab4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "la4", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "la#4", opcoes: ["Quinta diminuta", "Quinta aumentada", "Quinta justa", "Sexta diminuta"], correta: 2, nivel: 2 },
+{ nota1: "re#4", nota2: "sib4", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 1, nivel: 4 },
+{ nota1: "re#4", nota2: "si4", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "si#4", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 0, nivel: 2 },
+{ nota1: "re#4", nota2: "dob5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "do5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "re#4", nota2: "do#5", opcoes: ["Sétima diminuta", "Sétima aumentada", "Sétima menor", "Sétima maior"], correta: 2, nivel: 2 },
+{ nota1: "re#4", nota2: "reb5", opcoes: ["Sétima diminuta", "Sétima menor", "Oitava diminuta", "Oitava dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "re5", opcoes: ["Sétima menor", "Oitava diminuta", "Sétima maior", "Oitava justa"], correta: 1, nivel: 3 },
+{ nota1: "re#4", nota2: "re#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "re#4", nota2: "mib5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 3, nivel: 4 },
+{ nota1: "re#4", nota2: "mi5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Oitava aumentada"], correta: 0, nivel: 3 },
+{ nota1: "re#4", nota2: "mi#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Décima diminuta"], correta: 1, nivel: 2 },
+{ nota1: "mib4", nota2: "mib4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 2 },
+{ nota1: "mib4", nota2: "mi4", opcoes: ["Uníssono aumentado", "Segunda menor", "Uníssono justo", "Segunda diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mib4", nota2: "mi#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 3, nivel: 4 },
+{ nota1: "mib4", nota2: "fab4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Segunda aumentada"], correta: 1, nivel: 2 },
+{ nota1: "mib4", nota2: "fa4", opcoes: ["Segunda menor", "Segunda aumentada", "Segunda maior", "Terça diminuta"], correta: 2, nivel: 3 },
+{ nota1: "mib4", nota2: "fa#4", opcoes: ["Segunda maior", "Terça diminuta", "Terça menor", "Segunda aumentada"], correta: 3, nivel: 4 },
+{ nota1: "mib4", nota2: "solb4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0, nivel: 2 },
+{ nota1: "mib4", nota2: "sol4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "mib4", nota2: "sol#4", opcoes: ["Terça maior", "Quarta diminuta", "Terça aumentada", "Quarta justa"], correta: 2, nivel: 4 },
+{ nota1: "mib4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3, nivel: 2 },
+{ nota1: "mib4", nota2: "la4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mib4", nota2: "la#4", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quarta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "mib4", nota2: "sib4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 2, nivel: 2 },
+{ nota1: "mib4", nota2: "si4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "mib4", nota2: "si#4", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "mib4", nota2: "dob5", opcoes: ["Quinta justa", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2, nivel: 2 },
+{ nota1: "mib4", nota2: "do5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0, nivel: 3 },
+{ nota1: "mib4", nota2: "do#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1, nivel: 4 },
+{ nota1: "mib4", nota2: "reb5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "mib4", nota2: "re5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mib4", nota2: "re#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1, nivel: 4 },
+{ nota1: "mib4", nota2: "mib5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "mib4", nota2: "mi5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "mib4", nota2: "mi#5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "mib4", nota2: "fab5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 2 },
+{ nota1: "mib4", nota2: "fa5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3, nivel: 3 },
+{ nota1: "mib4", nota2: "fa#5", opcoes: ["Nona aumentada", "Nona maior", "Décima diminuta", "Décima menor"], correta: 0, nivel: 4 },
+{ nota1: "mi4", nota2: "mib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "mi4", nota2: "mi4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 1 },
+{ nota1: "mi4", nota2: "mi#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "fab4", opcoes: ["Uníssono diminuto", "Segunda menor", "Segunda diminuta", "Uníssono aumentado"], correta: 2, nivel: 3 },
+{ nota1: "mi4", nota2: "fa4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono dobrado aumentado"], correta: 1, nivel: 1 },
+{ nota1: "mi4", nota2: "fa#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mi4", nota2: "solb4", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Terça diminuta"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "sol4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0, nivel: 1 },
+{ nota1: "mi4", nota2: "sol#4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "mi4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "mi4", nota2: "la4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3, nivel: 1 },
+{ nota1: "mi4", nota2: "la#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mi4", nota2: "sib4", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "si4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 2, nivel: 1 },
+{ nota1: "mi4", nota2: "si#4", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "mi4", nota2: "dob5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "mi4", nota2: "do5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1, nivel: 1 },
+{ nota1: "mi4", nota2: "do#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0, nivel: 3 },
+{ nota1: "mi4", nota2: "reb5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2, nivel: 3 },
+{ nota1: "mi4", nota2: "re5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "mi4", nota2: "re#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0, nivel: 3 },
+{ nota1: "mi4", nota2: "mib5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "mi5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2, nivel: 1 },
+{ nota1: "mi4", nota2: "mi#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "fab5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 3, nivel: 3 },
+{ nota1: "mi4", nota2: "fa5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 1 },
+{ nota1: "mi4", nota2: "fa#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3, nivel: 3 },
+{ nota1: "mi#4", nota2: "mib4", opcoes: ["Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono justo", "Uníssono aumentado"], correta: 0, nivel: 4 },
+{ nota1: "mi#4", nota2: "mi4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "mi#4", nota2: "mi#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 2 },
+{ nota1: "mi#4", nota2: "fab4", opcoes: ["Uníssono justo", "Segunda menor", "Segunda diminuta", "Segunda dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "fa4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono aumentado"], correta: 0, nivel: 3 },
+{ nota1: "mi#4", nota2: "fa#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 1, nivel: 2 },
+{ nota1: "mi#4", nota2: "solb4", opcoes: ["Segunda maior", "Terça maior", "Terça diminuta", "Terça dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "sol4", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 1, nivel: 3 },
+{ nota1: "mi#4", nota2: "sol#4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta justa"], correta: 0, nivel: 2 },
+{ nota1: "mi#4", nota2: "lab4", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "la4", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "mi#4", nota2: "la#4", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "mi#4", nota2: "sib4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "si4", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 2, nivel: 3 },
+{ nota1: "mi#4", nota2: "si#4", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "mi#4", nota2: "dob5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "do5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "mi#4", nota2: "do#5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1, nivel: 2 },
+{ nota1: "mi#4", nota2: "reb5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sétima dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "re5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2, nivel: 3 },
+{ nota1: "mi#4", nota2: "re#5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "mi#4", nota2: "mib5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "mi#4", nota2: "mi5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 2, nivel: 3 },
+{ nota1: "mi#4", nota2: "mi#5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "mi#4", nota2: "fab5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona dobrada diminuta", "Oitava aumentada"], correta: 2, nivel: 4 },
+{ nota1: "mi#4", nota2: "fa5", opcoes: ["Oitava justa", "Nona diminuta", "Nona maior", "Oitava aumentada"], correta: 1, nivel: 3 },
+{ nota1: "mi#4", nota2: "fa#5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 2 },
+{ nota1: "fab4", nota2: "fab4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3, nivel: 2 },
+{ nota1: "fab4", nota2: "fa4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "fab4", nota2: "fa#4", opcoes: ["Uníssono justo", "Uníssono dobrado aumentado", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 4 },
+{ nota1: "fab4", nota2: "solb4", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 3, nivel: 2 },
+{ nota1: "fab4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda aumentada", "Segunda maior"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "sol#4", opcoes: ["Segunda aumentada", "Segunda maior", "Terça diminuta", "Segunda dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "fab4", nota2: "lab4", opcoes: ["Segunda aumentada", "Terça diminuta", "Terça menor", "Terça maior"], correta: 3, nivel: 2 },
+{ nota1: "fab4", nota2: "la4", opcoes: ["Terça diminuta", "Terça maior", "Terça aumentada", "Quarta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "la#4", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "fab4", nota2: "sib4", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Terça aumentada"], correta: 2, nivel: 2 },
+{ nota1: "fab4", nota2: "si4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "si#4", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta tripla aumentada", "Quarta dobrada aumentada"], correta: 2, nivel: 4 },
+{ nota1: "fab4", nota2: "dob5", opcoes: ["Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 1, nivel: 2 },
+{ nota1: "fab4", nota2: "do5", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "fab4", nota2: "do#5", opcoes: ["Quinta justa", "Quinta aumentada", "Quinta diminuta", "Quinta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "fab4", nota2: "reb5", opcoes: ["Quinta justa", "Sexta diminuta", "Sexta maior", "Sexta menor"], correta: 2, nivel: 2 },
+{ nota1: "fab4", nota2: "re5", opcoes: ["Sexta menor", "Sexta maior", "Sexta aumentada", "Sexta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "re#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sexta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "fab4", nota2: "mib5", opcoes: ["Sexta menor", "Sétima maior", "Sexta aumentada", "Sétima menor"], correta: 1, nivel: 2 },
+{ nota1: "fab4", nota2: "mi5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima aumentada", "Sexta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "fab4", nota2: "fab5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 2 },
+{ nota1: "fab4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2, nivel: 3 },
+{ nota1: "fab4", nota2: "fa#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava dobrada aumentada", "Nona maior"], correta: 2, nivel: 4 },
+{ nota1: "fab4", nota2: "solb5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 3, nivel: 2 },
+{ nota1: "fab4", nota2: "sol5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 3, nivel: 3 },
+{ nota1: "fab4", nota2: "sol#5", opcoes: ["Nona menor", "Nona aumentada", "Nona dobrada aumentada", "Nona diminuta"], correta: 2, nivel: 4 },
+{ nota1: "fa4", nota2: "fab4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "fa4", nota2: "fa4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3, nivel: 1 },
+{ nota1: "fa4", nota2: "fa#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "fa4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda aumentada", "Segunda maior", "Uníssono dobrado aumentado"], correta: 2, nivel: 1 },
+{ nota1: "fa4", nota2: "sol#4", opcoes: ["Segunda maior", "Segunda diminuta", "Terça diminuta", "Segunda aumentada"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "lab4", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Segunda aumentada"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "la4", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 1, nivel: 1 },
+{ nota1: "fa4", nota2: "la#4", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça aumentada"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "sib4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Terça aumentada", "Quarta justa"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "si4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 1 },
+{ nota1: "fa4", nota2: "si#4", opcoes: ["Quarta justa", "Quarta dobrada aumentada", "Quarta aumentada", "Quinta diminuta"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "dob5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 2, nivel: 3 },
+{ nota1: "fa4", nota2: "do5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta aumentada", "Quinta justa"], correta: 3, nivel: 1 },
+{ nota1: "fa4", nota2: "do#5", opcoes: ["Quinta aumentada", "Quinta justa", "Quinta diminuta", "Sexta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "fa4", nota2: "reb5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "re5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Quinta aumentada"], correta: 1, nivel: 1 },
+{ nota1: "fa4", nota2: "re#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "mib5", opcoes: ["Sétima diminuta", "Sétima menor", "Sexta aumentada", "Sétima maior"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "mi5", opcoes: ["Sétima menor", "Sétima maior", "Sétima diminuta", "Sexta aumentada"], correta: 1, nivel: 1 },
+{ nota1: "fa4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "fab5", opcoes: ["Oitava justa", "Oitava aumentada", "Nona menor", "Oitava diminuta"], correta: 3, nivel: 3 },
+{ nota1: "fa4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 0, nivel: 1 },
+{ nota1: "fa4", nota2: "fa#5", opcoes: ["Oitava justa", "Oitava aumentada", "Oitava diminuta", "Nona menor"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "solb5", opcoes: ["Oitava aumentada", "Nona menor", "Nona maior", "Oitava diminuta"], correta: 1, nivel: 3 },
+{ nota1: "fa4", nota2: "sol5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1, nivel: 1 },
+{ nota1: "fa4", nota2: "sol#5", opcoes: ["Nona aumentada", "Nona maior", "Nona diminuta", "Décima diminuta"], correta: 0, nivel: 3 },
+{ nota1: "fa#4", nota2: "fab4", opcoes: ["Uníssono justo", "Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono aumentado"], correta: 1, nivel: 4 },
+{ nota1: "fa#4", nota2: "fa4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "fa#4", nota2: "fa#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Segunda menor", "Uníssono justo"], correta: 3, nivel: 2 },
+{ nota1: "fa#4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda diminuta"], correta: 3, nivel: 4 },
+{ nota1: "fa#4", nota2: "sol4", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono dobrado aumentado"], correta: 1, nivel: 3 },
+{ nota1: "fa#4", nota2: "sol#4", opcoes: ["Segunda maior", "Segunda diminuta", "Segunda aumentada", "Terça diminuta"], correta: 0, nivel: 2 },
+{ nota1: "fa#4", nota2: "lab4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 2, nivel: 4 },
+{ nota1: "fa#4", nota2: "la4", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "fa#4", nota2: "la#4", opcoes: ["Terça diminuta", "Terça aumentada", "Terça maior", "Quarta justa"], correta: 2, nivel: 2 },
+{ nota1: "fa#4", nota2: "sib4", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1, nivel: 4 },
+{ nota1: "fa#4", nota2: "si4", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta dobrada aumentada", "Quarta justa"], correta: 3, nivel: 3 },
+{ nota1: "fa#4", nota2: "si#4", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 2 },
+{ nota1: "fa#4", nota2: "dob5", opcoes: ["Quarta justa", "Quinta dobrada diminuta", "Quarta aumentada", "Quinta justa"], correta: 1, nivel: 4 },
+{ nota1: "fa#4", nota2: "do5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "fa#4", nota2: "do#5", opcoes: ["Quinta diminuta", "Quinta aumentada", "Sexta diminuta", "Quinta justa"], correta: 3, nivel: 2 },
+{ nota1: "fa#4", nota2: "reb5", opcoes: ["Sexta diminuta", "Sexta menor", "Quinta aumentada", "Sexta maior"], correta: 0, nivel: 4 },
+{ nota1: "fa#4", nota2: "re5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 1, nivel: 3 },
+{ nota1: "fa#4", nota2: "re#5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta maior", "Sétima menor"], correta: 2, nivel: 2 },
+{ nota1: "fa#4", nota2: "mib5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 1, nivel: 4 },
+{ nota1: "fa#4", nota2: "mi5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Oitava diminuta"], correta: 1, nivel: 3 },
+{ nota1: "fa#4", nota2: "mi#5", opcoes: ["Sétima menor", "Sétima maior", "Oitava diminuta", "Sétima aumentada"], correta: 1, nivel: 2 },
+{ nota1: "fa#4", nota2: "fab5", opcoes: ["Oitava dobrada diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 0, nivel: 4 },
+{ nota1: "fa#4", nota2: "fa5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona maior", "Oitava aumentada"], correta: 1, nivel: 3 },
+{ nota1: "fa#4", nota2: "fa#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 0, nivel: 2 },
+{ nota1: "fa#4", nota2: "solb5", opcoes: ["Oitava justa", "Nona diminuta", "Nona menor", "Oitava aumentada"], correta: 1, nivel: 4 },
+{ nota1: "fa#4", nota2: "sol5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 0, nivel: 3 },
+{ nota1: "fa#4", nota2: "sol#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3, nivel: 2 },
+{ nota1: "solb4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 2 },
+{ nota1: "solb4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "solb4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono dobrado aumentado", "Segunda menor"], correta: 2, nivel: 4 },
+{ nota1: "solb4", nota2: "lab4", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 3, nivel: 2 },
+{ nota1: "solb4", nota2: "la4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0, nivel: 3 },
+{ nota1: "solb4", nota2: "la#4", opcoes: ["Segunda maior", "Segunda dobrada aumentada", "Segunda aumentada", "Terça menor"], correta: 1, nivel: 4 },
+{ nota1: "solb4", nota2: "sib4", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 3, nivel: 2 },
+{ nota1: "solb4", nota2: "si4", opcoes: ["Terça menor", "Terça diminuta", "Quarta diminuta", "Terça aumentada"], correta: 3, nivel: 3 },
+{ nota1: "solb4", nota2: "si#4", opcoes: ["Terça dobrada aumentada", "Terça aumentada", "Terça menor", "Quarta diminuta"], correta: 0, nivel: 4 },
+{ nota1: "solb4", nota2: "dob5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "solb4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta aumentada", "Quarta justa", "Quarta dobrada aumentada"], correta: 1, nivel: 3 },
+{ nota1: "solb4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "solb4", nota2: "reb5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada"], correta: 2, nivel: 2 },
+{ nota1: "solb4", nota2: "re5", opcoes: ["Quinta diminuta", "Quinta justa", "Quarta aumentada", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "solb4", nota2: "re#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta dobrada aumentada", "Sexta diminuta"], correta: 2, nivel: 4 },
+{ nota1: "solb4", nota2: "mib5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 3, nivel: 2 },
+{ nota1: "solb4", nota2: "mi5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Sexta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "solb4", nota2: "mi#5", opcoes: ["Sexta diminuta", "Sexta dobrada aumentada", "Sexta maior", "Sétima diminuta"], correta: 1, nivel: 4 },
+{ nota1: "solb4", nota2: "fab5", opcoes: ["Sexta maior", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 3, nivel: 2 },
+{ nota1: "solb4", nota2: "fa5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "solb4", nota2: "fa#5", opcoes: ["Sétima maior", "Sétima menor", "Sétima aumentada", "Oitava diminuta"], correta: 2, nivel: 4 },
+{ nota1: "solb4", nota2: "solb5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 2 },
+{ nota1: "solb4", nota2: "sol5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2, nivel: 3 },
+{ nota1: "solb4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava dobrada aumentada"], correta: 3, nivel: 4 },
+{ nota1: "solb4", nota2: "lab5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1, nivel: 2 },
+{ nota1: "solb4", nota2: "la5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 1, nivel: 3 },
+{ nota1: "solb4", nota2: "la#5", opcoes: ["Nona maior", "Nona diminuta", "Nona dobrada aumentada", "Décima diminuta"], correta: 2, nivel: 4 },
+{ nota1: "sol4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3, nivel: 3 },
+{ nota1: "sol4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 1 },
+{ nota1: "sol4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "lab4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 3, nivel: 3 },
+{ nota1: "sol4", nota2: "la4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 1 },
+{ nota1: "sol4", nota2: "la#4", opcoes: ["Segunda aumentada", "Segunda maior", "Segunda menor", "Terça diminuta"], correta: 0, nivel: 3 },
+{ nota1: "sol4", nota2: "sib4", opcoes: ["Segunda maior", "Terça menor", "Segunda menor", "Terça diminuta"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "si4", opcoes: ["Segunda maior", "Terça menor", "Terça maior", "Terça diminuta"], correta: 2, nivel: 1 },
+{ nota1: "sol4", nota2: "si#4", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça aumentada"], correta: 3, nivel: 3 },
+{ nota1: "sol4", nota2: "dob5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 1, nivel: 1 },
+{ nota1: "sol4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "sol4", nota2: "reb5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 2, nivel: 3 },
+{ nota1: "sol4", nota2: "re5", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "sol4", nota2: "re#5", opcoes: ["Quinta diminuta", "Quinta aumentada", "Quinta justa", "Sexta diminuta"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "mib5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3, nivel: 3 },
+{ nota1: "sol4", nota2: "mi5", opcoes: ["Sexta menor", "Sexta maior", "Quinta aumentada", "Sexta diminuta"], correta: 1, nivel: 1 },
+{ nota1: "sol4", nota2: "mi#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima diminuta"], correta: 2, nivel: 3 },
+{ nota1: "sol4", nota2: "fab5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "fa5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 2, nivel: 1 },
+{ nota1: "sol4", nota2: "fa#5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 3, nivel: 3 },
+{ nota1: "sol4", nota2: "solb5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0, nivel: 3 },
+{ nota1: "sol4", nota2: "sol5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 1 },
+{ nota1: "sol4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 2, nivel: 3 },
+{ nota1: "sol4", nota2: "lab5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 1, nivel: 3 },
+{ nota1: "sol4", nota2: "la5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1, nivel: 1 },
+{ nota1: "sol4", nota2: "la#5", opcoes: ["Nona menor", "Nona aumentada", "Nona maior", "Nona diminuta"], correta: 1, nivel: 3 },
+{ nota1: "sol#4", nota2: "solb4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono dobrado diminuto", "Segunda menor"], correta: 2, nivel: 4 },
+{ nota1: "sol#4", nota2: "sol4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Uníssono diminuto"], correta: 3, nivel: 3 },
+{ nota1: "sol#4", nota2: "sol#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Segunda menor"], correta: 0, nivel: 2 },
+{ nota1: "sol#4", nota2: "lab4", opcoes: ["Uníssono justo", "Segunda diminuta", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 4 },
+{ nota1: "sol#4", nota2: "la4", opcoes: ["Segunda maior", "Segunda diminuta", "Segunda menor", "Uníssono dobrado aumentado"], correta: 2, nivel: 3 },
+{ nota1: "sol#4", nota2: "la#4", opcoes: ["Segunda menor", "Segunda diminuta", "Segunda aumentada", "Segunda maior"], correta: 3, nivel: 2 },
+{ nota1: "sol#4", nota2: "sib4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 3, nivel: 4 },
+{ nota1: "sol#4", nota2: "si4", opcoes: ["Segunda maior", "Terça menor", "Terça maior", "Terça diminuta"], correta: 1, nivel: 3 },
+{ nota1: "sol#4", nota2: "si#4", opcoes: ["Terça menor", "Terça diminuta", "Terça maior", "Terça aumentada"], correta: 2, nivel: 2 },
+{ nota1: "sol#4", nota2: "dob5", opcoes: ["Terça maior", "Quarta dobrada diminuta", "Quarta justa", "Quarta aumentada"], correta: 1, nivel: 4 },
+{ nota1: "sol#4", nota2: "do5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 0, nivel: 3 },
+{ nota1: "sol#4", nota2: "do#5", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 2 },
+{ nota1: "sol#4", nota2: "reb5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta dobrada diminuta", "Quinta justa"], correta: 2, nivel: 4 },
+{ nota1: "sol#4", nota2: "re5", opcoes: ["Quinta diminuta", "Quarta aumentada", "Quinta aumentada", "Quinta justa"], correta: 0, nivel: 3 },
+{ nota1: "sol#4", nota2: "re#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quarta aumentada", "Quinta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "sol#4", nota2: "mib5", opcoes: ["Quinta justa", "Quinta aumentada", "Sexta diminuta", "Sexta menor"], correta: 2, nivel: 4 },
+{ nota1: "sol#4", nota2: "mi5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2, nivel: 3 },
+{ nota1: "sol#4", nota2: "mi#5", opcoes: ["Sexta menor", "Sexta maior", "Sexta aumentada", "Sétima diminuta"], correta: 1, nivel: 2 },
+{ nota1: "sol#4", nota2: "fab5", opcoes: ["Sexta maior", "Sexta menor", "Sexta aumentada", "Sétima dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "sol#4", nota2: "fa5", opcoes: ["Sexta menor", "Sétima diminuta", "Sexta aumentada", "Sétima menor"], correta: 1, nivel: 3 },
+{ nota1: "sol#4", nota2: "fa#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Sexta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "sol#4", nota2: "solb5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava dobrada diminuta", "Sétima maior"], correta: 2, nivel: 4 },
+{ nota1: "sol#4", nota2: "sol5", opcoes: ["Oitava diminuta", "Oitava justa", "Oitava aumentada", "Nona menor"], correta: 0, nivel: 3 },
+{ nota1: "sol#4", nota2: "sol#5", opcoes: ["Oitava justa", "Oitava aumentada", "Oitava diminuta", "Nona menor"], correta: 0, nivel: 2 },
+{ nota1: "sol#4", nota2: "lab5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona diminuta"], correta: 3, nivel: 4 },
+{ nota1: "sol#4", nota2: "la5", opcoes: ["Oitava aumentada", "Nona menor", "Nona diminuta", "Nona maior"], correta: 1, nivel: 3 },
+{ nota1: "sol#4", nota2: "la#5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 1, nivel: 2 },
+{ nota1: "lab4", nota2: "lab4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 2 },
+{ nota1: "lab4", nota2: "la4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "la#4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Uníssono diminuto", "Uníssono dobrado aumentado"], correta: 3, nivel: 4 },
+{ nota1: "lab4", nota2: "sib4", opcoes: ["Uníssono aumentado", "Segunda menor", "Segunda maior", "Segunda diminuta"], correta: 2, nivel: 2 },
+{ nota1: "lab4", nota2: "si4", opcoes: ["Segunda menor", "Segunda maior", "Segunda aumentada", "Segunda diminuta"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda dobrada aumentada", "Terça diminuta"], correta: 2, nivel: 4 },
+{ nota1: "lab4", nota2: "dob5", opcoes: ["Segunda aumentada", "Terça maior", "Terça diminuta", "Terça menor"], correta: 3, nivel: 2 },
+{ nota1: "lab4", nota2: "do5", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Quarta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "do#5", opcoes: ["Terça menor", "Terça aumentada", "Terça diminuta", "Quarta diminuta"], correta: 1, nivel: 4 },
+{ nota1: "lab4", nota2: "reb5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta justa", "Quarta aumentada"], correta: 2, nivel: 2 },
+{ nota1: "lab4", nota2: "re5", opcoes: ["Quarta diminuta", "Quarta justa", "Quarta aumentada", "Quarta dobrada aumentada"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "re#5", opcoes: ["Quarta dobrada aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 4 },
+{ nota1: "lab4", nota2: "mib5", opcoes: ["Quarta justa", "Quinta diminuta", "Quarta aumentada", "Quinta justa"], correta: 3, nivel: 2 },
+{ nota1: "lab4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quinta justa", "Quinta diminuta", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "lab4", nota2: "mi#5", opcoes: ["Quinta diminuta", "Quinta justa", "Quinta dobrada aumentada", "Sexta diminuta"], correta: 2, nivel: 4 },
+{ nota1: "lab4", nota2: "fab5", opcoes: ["Quinta aumentada", "Sexta diminuta", "Sexta menor", "Sexta maior"], correta: 2, nivel: 2 },
+{ nota1: "lab4", nota2: "fa5", opcoes: ["Sexta diminuta", "Sexta menor", "Sexta maior", "Sexta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "fa#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sexta maior", "Sétima diminuta"], correta: 1, nivel: 4 },
+{ nota1: "lab4", nota2: "solb5", opcoes: ["Sexta maior", "Sétima menor", "Sétima diminuta", "Sétima maior"], correta: 1, nivel: 2 },
+{ nota1: "lab4", nota2: "sol5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "lab4", nota2: "sol#5", opcoes: ["Sétima menor", "Sétima maior", "Sétima aumentada", "Oitava diminuta"], correta: 2, nivel: 4 },
+{ nota1: "lab4", nota2: "lab5", opcoes: ["Sétima maior", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "lab4", nota2: "la5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "lab4", nota2: "la#5", opcoes: ["Oitava dobrada aumentada", "Oitava justa", "Nona menor", "Nona maior"], correta: 0, nivel: 4 },
+{ nota1: "lab4", nota2: "sib5", opcoes: ["Oitava justa", "Nona menor", "Nona maior", "Nona diminuta"], correta: 2, nivel: 2 },
+{ nota1: "lab4", nota2: "si5", opcoes: ["Nona menor", "Nona diminuta", "Nona maior", "Nona aumentada"], correta: 3, nivel: 3 },
+{ nota1: "lab4", nota2: "si#5", opcoes: ["Nona maior", "Nona diminuta", "Nona dobrada aumentada", "Décima diminuta"], correta: 2, nivel: 4 },
+{ nota1: "la4", nota2: "lab4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "la4", nota2: "la4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 1 },
+{ nota1: "la4", nota2: "la#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "la4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono aumentado", "Segunda menor", "Segunda diminuta"], correta: 2, nivel: 3 },
+{ nota1: "la4", nota2: "si4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 1 },
+{ nota1: "la4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda aumentada", "Segunda menor", "Terça diminuta"], correta: 1, nivel: 3 },
+{ nota1: "la4", nota2: "dob5", opcoes: ["Segunda aumentada", "Terça menor", "Terça diminuta", "Terça maior"], correta: 2, nivel: 3 },
+{ nota1: "la4", nota2: "do5", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 3, nivel: 1 },
+{ nota1: "la4", nota2: "do#5", opcoes: ["Terça maior", "Terça menor", "Terça diminuta", "Quarta justa"], correta: 0, nivel: 3 },
+{ nota1: "la4", nota2: "reb5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "la4", nota2: "re5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "la4", nota2: "re#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "la4", nota2: "mib5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "la4", nota2: "mi5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 3, nivel: 1 },
+{ nota1: "la4", nota2: "mi#5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 3, nivel: 3 },
+{ nota1: "la4", nota2: "fab5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "la4", nota2: "fa5", opcoes: ["Sexta menor", "Sexta diminuta", "Sexta maior", "Quinta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "la4", nota2: "fa#5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Sexta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "la4", nota2: "solb5", opcoes: ["Sexta maior", "Sexta diminuta", "Sétima diminuta", "Sexta menor"], correta: 2, nivel: 3 },
+{ nota1: "la4", nota2: "sol5", opcoes: ["Sétima diminuta", "Sétima maior", "Sétima menor", "Sexta aumentada"], correta: 2, nivel: 1 },
+{ nota1: "la4", nota2: "sol#5", opcoes: ["Sétima maior", "Sétima menor", "Sétima diminuta", "Oitava diminuta"], correta: 0, nivel: 3 },
+{ nota1: "la4", nota2: "lab5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 3 },
+{ nota1: "la4", nota2: "la5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 1 },
+{ nota1: "la4", nota2: "la#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "la4", nota2: "sib5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 3 },
+{ nota1: "la4", nota2: "si5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Nona diminuta"], correta: 1, nivel: 1 },
+{ nota1: "la4", nota2: "si#5", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 2, nivel: 3 },
+{ nota1: "la#4", nota2: "lab4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Uníssono dobrado diminuto"], correta: 3, nivel: 4 },
+{ nota1: "la#4", nota2: "la4", opcoes: ["Uníssono diminuto", "Uníssono justo", "Uníssono aumentado", "Segunda menor"], correta: 0, nivel: 3 },
+{ nota1: "la#4", nota2: "la#4", opcoes: ["Uníssono aumentado", "Uníssono justo", "Uníssono diminuto", "Segunda menor"], correta: 1, nivel: 2 },
+{ nota1: "la#4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda diminuta", "Segunda menor"], correta: 2, nivel: 4 },
+{ nota1: "la#4", nota2: "si4", opcoes: ["Segunda menor", "Uníssono aumentado", "Segunda diminuta", "Segunda maior"], correta: 0, nivel: 3 },
+{ nota1: "la#4", nota2: "si#4", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Uníssono dobrado aumentado"], correta: 0, nivel: 2 },
+{ nota1: "la#4", nota2: "dob5", opcoes: ["Segunda maior", "Segunda diminuta", "Terça dobrada diminuta", "Segunda aumentada"], correta: 2, nivel: 4 },
+{ nota1: "la#4", nota2: "do5", opcoes: ["Terça maior", "Segunda aumentada", "Terça diminuta", "Terça menor"], correta: 2, nivel: 3 },
+{ nota1: "la#4", nota2: "do#5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 2, nivel: 2 },
+{ nota1: "la#4", nota2: "reb5", opcoes: ["Terça maior", "Terça menor", "Quarta dobrada diminuta", "Terça diminuta"], correta: 2, nivel: 4 },
+{ nota1: "la#4", nota2: "re5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "la#4", nota2: "re#5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "la#4", nota2: "mib5", opcoes: ["Quarta justa", "Quarta diminuta", "Quarta aumentada", "Quinta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "la#4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "la#4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta diminuta", "Quinta justa"], correta: 3, nivel: 2 },
+{ nota1: "la#4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quinta dobrada diminuta", "Quinta justa", "Quinta aumentada"], correta: 1, nivel: 4 },
+{ nota1: "la#4", nota2: "fa5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 3, nivel: 3 },
+{ nota1: "la#4", nota2: "fa#5", opcoes: ["Sexta diminuta", "Sexta menor", "Sexta maior", "Quinta aumentada"], correta: 1, nivel: 2 },
+{ nota1: "la#4", nota2: "solb5", opcoes: ["Sexta menor", "Sexta maior", "Sexta dobrada diminuta", "Sexta aumentada"], correta: 2, nivel: 4 },
+{ nota1: "la#4", nota2: "sol5", opcoes: ["Sexta maior", "Sexta diminuta", "Sétima diminuta", "Sexta menor"], correta: 2, nivel: 3 },
+{ nota1: "la#4", nota2: "sol#5", opcoes: ["Sétima diminuta", "Sétima menor", "Sétima maior", "Sexta aumentada"], correta: 1, nivel: 2 },
+{ nota1: "la#4", nota2: "lab5", opcoes: ["Sétima maior", "Sétima dobrada diminuta", "Sétima menor", "Oitava diminuta"], correta: 1, nivel: 4 },
+{ nota1: "la#4", nota2: "la5", opcoes: ["Oitava justa", "Oitava diminuta", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 3 },
+{ nota1: "la#4", nota2: "la#5", opcoes: ["Oitava diminuta", "Oitava aumentada", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "la#4", nota2: "sib5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona diminuta", "Oitava aumentada"], correta: 2, nivel: 4 },
+{ nota1: "la#4", nota2: "si5", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 3 },
+{ nota1: "la#4", nota2: "si#5", opcoes: ["Nona menor", "Nona maior", "Nona aumentada", "Nona diminuta"], correta: 1, nivel: 2 },
+{ nota1: "sib4", nota2: "sib4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 2 },
+{ nota1: "sib4", nota2: "si4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3, nivel: 3 },
+{ nota1: "sib4", nota2: "si#4", opcoes: ["Uníssono dobrado aumentado", "Uníssono aumentado", "Uníssono justo", "Segunda menor"], correta: 0, nivel: 4 },
+{ nota1: "sib4", nota2: "dob5", opcoes: ["Uníssono aumentado", "Segunda diminuta", "Segunda menor", "Segunda maior"], correta: 2, nivel: 2 },
+{ nota1: "sib4", nota2: "do5", opcoes: ["Segunda diminuta", "Segunda aumentada", "Segunda maior", "Segunda menor"], correta: 2, nivel: 3 },
+{ nota1: "sib4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Terça diminuta", "Segunda aumentada"], correta: 3, nivel: 4 },
+{ nota1: "sib4", nota2: "reb5", opcoes: ["Terça diminuta", "Terça menor", "Terça maior", "Segunda aumentada"], correta: 1, nivel: 2 },
+{ nota1: "sib4", nota2: "re5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta diminuta"], correta: 1, nivel: 3 },
+{ nota1: "sib4", nota2: "re#5", opcoes: ["Terça menor", "Quarta diminuta", "Terça maior", "Terça aumentada"], correta: 3, nivel: 4 },
+{ nota1: "sib4", nota2: "mib5", opcoes: ["Quarta diminuta", "Quarta aumentada", "Terça aumentada", "Quarta justa"], correta: 3, nivel: 2 },
+{ nota1: "sib4", nota2: "mi5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "sib4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta dobrada aumentada", "Quarta aumentada", "Quinta diminuta"], correta: 1, nivel: 4 },
+{ nota1: "sib4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quinta justa", "Quarta dobrada aumentada", "Quinta diminuta"], correta: 3, nivel: 2 },
+{ nota1: "sib4", nota2: "fa5", opcoes: ["Quarta dobrada aumentada", "Quinta diminuta", "Quinta aumentada", "Quinta justa"], correta: 3, nivel: 3 },
+{ nota1: "sib4", nota2: "fa#5", opcoes: ["Quinta aumentada", "Quinta justa", "Quinta diminuta", "Sexta diminuta"], correta: 0, nivel: 4 },
+{ nota1: "sib4", nota2: "solb5", opcoes: ["Quinta justa", "Sexta diminuta", "Quinta aumentada", "Sexta menor"], correta: 3, nivel: 2 },
+{ nota1: "sib4", nota2: "sol5", opcoes: ["Sexta menor", "Sexta maior", "Sexta diminuta", "Quinta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "sib4", nota2: "sol#5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 1, nivel: 4 },
+{ nota1: "sib4", nota2: "lab5", opcoes: ["Sétima diminuta", "Sétima menor", "Sexta aumentada", "Sétima maior"], correta: 1, nivel: 2 },
+{ nota1: "sib4", nota2: "la5", opcoes: ["Sétima menor", "Sétima maior", "Sétima diminuta", "Sexta aumentada"], correta: 1, nivel: 3 },
+{ nota1: "sib4", nota2: "la#5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 1, nivel: 4 },
+{ nota1: "sib4", nota2: "sib5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Nona menor", "Oitava justa"], correta: 3, nivel: 2 },
+{ nota1: "sib4", nota2: "si5", opcoes: ["Oitava aumentada", "Oitava justa", "Oitava diminuta", "Nona menor"], correta: 0, nivel: 3 },
+{ nota1: "sib4", nota2: "si#5", opcoes: ["Oitava justa", "Oitava dobrada aumentada", "Oitava aumentada", "Nona menor"], correta: 1, nivel: 4 },
+{ nota1: "sib4", nota2: "dob6", opcoes: ["Oitava aumentada", "Nona diminuta", "Nona menor", "Nona maior"], correta: 2, nivel: 2 },
+{ nota1: "sib4", nota2: "do6", opcoes: ["Nona diminuta", "Nona menor", "Nona aumentada", "Nona maior"], correta: 3, nivel: 3 },
+{ nota1: "sib4", nota2: "do#6", opcoes: ["Nona aumentada", "Nona maior", "Nona diminuta", "Décima diminuta"], correta: 0, nivel: 4 },
+{ nota1: "si4", nota2: "sib4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "si4", nota2: "si4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 1 },
+{ nota1: "si4", nota2: "si#4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Segunda menor", "Uníssono aumentado"], correta: 3, nivel: 3 },
+{ nota1: "si4", nota2: "dob5", opcoes: ["Segunda diminuta", "Segunda menor", "Uníssono diminuto", "Uníssono aumentado"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "do5", opcoes: ["Segunda maior", "Segunda menor", "Segunda diminuta", "Uníssono dobrado aumentado"], correta: 1, nivel: 1 },
+{ nota1: "si4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "reb5", opcoes: ["Segunda maior", "Segunda menor", "Terça diminuta", "Segunda aumentada"], correta: 2, nivel: 3 },
+{ nota1: "si4", nota2: "re5", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta diminuta"], correta: 0, nivel: 1 },
+{ nota1: "si4", nota2: "re#5", opcoes: ["Terça diminuta", "Terça maior", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "si4", nota2: "mib5", opcoes: ["Terça maior", "Quarta diminuta", "Terça menor", "Quarta justa"], correta: 1, nivel: 3 },
+{ nota1: "si4", nota2: "mi5", opcoes: ["Terça maior", "Quarta diminuta", "Quarta aumentada", "Quarta justa"], correta: 3, nivel: 1 },
+{ nota1: "si4", nota2: "mi#5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "fab5", opcoes: ["Quarta justa", "Quarta aumentada", "Quarta diminuta", "Quinta dobrada diminuta"], correta: 3, nivel: 3 },
+{ nota1: "si4", nota2: "fa5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quarta dobrada aumentada"], correta: 1, nivel: 1 },
+{ nota1: "si4", nota2: "fa#5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta diminuta"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "solb5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "si4", nota2: "sol5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1, nivel: 1 },
+{ nota1: "si4", nota2: "sol#5", opcoes: ["Sexta maior", "Sexta menor", "Sexta diminuta", "Sexta aumentada"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "lab5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2, nivel: 3 },
+{ nota1: "si4", nota2: "la5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 1 },
+{ nota1: "si4", nota2: "la#5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava diminuta"], correta: 0, nivel: 3 },
+{ nota1: "si4", nota2: "sib5", opcoes: ["Sétima menor", "Sétima aumentada", "Sétima maior", "Oitava diminuta"], correta: 3, nivel: 3 },
+{ nota1: "si4", nota2: "si5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2, nivel: 1 },
+{ nota1: "si4", nota2: "si#5", opcoes: ["Oitava justa", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 3, nivel: 3 },
+{ nota1: "si4", nota2: "dob6", opcoes: ["Oitava justa", "Nona diminuta", "Nona menor", "Oitava aumentada"], correta: 1, nivel: 3 },
+{ nota1: "si4", nota2: "do6", opcoes: ["Nona menor", "Nona diminuta", "Nona maior", "Nona aumentada"], correta: 0, nivel: 1 },
+{ nota1: "si4", nota2: "do#6", opcoes: ["Nona menor", "Nona diminuta", "Nona aumentada", "Nona maior"], correta: 3, nivel: 3 },
+{ nota1: "si#4", nota2: "sib4", opcoes: ["Uníssono dobrado diminuto", "Uníssono diminuto", "Uníssono justo", "Uníssono aumentado"], correta: 0, nivel: 4 },
+{ nota1: "si#4", nota2: "si4", opcoes: ["Uníssono justo", "Uníssono diminuto", "Uníssono aumentado", "Segunda menor"], correta: 1, nivel: 3 },
+{ nota1: "si#4", nota2: "si#4", opcoes: ["Uníssono aumentado", "Uníssono diminuto", "Uníssono justo", "Segunda menor"], correta: 2, nivel: 2 },
+{ nota1: "si#4", nota2: "dob5", opcoes: ["Uníssono justo", "Segunda menor", "Segunda dobrada diminuta", "Uníssono aumentado"], correta: 2, nivel: 4 },
+{ nota1: "si#4", nota2: "do5", opcoes: ["Segunda diminuta", "Segunda menor", "Segunda maior", "Uníssono aumentado"], correta: 0, nivel: 3 },
+{ nota1: "si#4", nota2: "do#5", opcoes: ["Segunda maior", "Segunda menor", "Segunda aumentada", "Terça diminuta"], correta: 1, nivel: 2 },
+{ nota1: "si#4", nota2: "reb5", opcoes: ["Segunda maior", "Terça maior", "Terça dobrada diminuta", "Segunda aumentada"], correta: 2, nivel: 4 },
+{ nota1: "si#4", nota2: "re5", opcoes: ["Terça maior", "Terça diminuta", "Quarta diminuta", "Terça menor"], correta: 1, nivel: 3 },
+{ nota1: "si#4", nota2: "re#5", opcoes: ["Terça menor", "Terça maior", "Terça diminuta", "Quarta justa"], correta: 0, nivel: 2 },
+{ nota1: "si#4", nota2: "mib5", opcoes: ["Terça maior", "Quarta dobrada diminuta", "Terça menor", "Quarta justa"], correta: 1, nivel: 4 },
+{ nota1: "si#4", nota2: "mi5", opcoes: ["Quarta justa", "Terça maior", "Quarta diminuta", "Quarta aumentada"], correta: 2, nivel: 3 },
+{ nota1: "si#4", nota2: "mi#5", opcoes: ["Quarta justa", "Quarta diminuta", "Quinta diminuta", "Quarta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "si#4", nota2: "fab5", opcoes: ["Quarta aumentada", "Quarta justa", "Quarta diminuta", "Quinta tripla diminuta"], correta: 3, nivel: 4 },
+{ nota1: "si#4", nota2: "fa5", opcoes: ["Quarta justa", "Quarta aumentada", "Quinta dobrada diminuta", "Quinta justa"], correta: 2, nivel: 3 },
+{ nota1: "si#4", nota2: "fa#5", opcoes: ["Quarta aumentada", "Quinta diminuta", "Quinta justa", "Quinta aumentada"], correta: 1, nivel: 2 },
+{ nota1: "si#4", nota2: "solb5", opcoes: ["Quinta justa", "Quinta diminuta", "Quinta aumentada", "Sexta dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "si#4", nota2: "sol5", opcoes: ["Quinta aumentada", "Quinta justa", "Sexta diminuta", "Quinta diminuta"], correta: 2, nivel: 3 },
+{ nota1: "si#4", nota2: "sol#5", opcoes: ["Quinta justa", "Sexta menor", "Sexta diminuta", "Sexta maior"], correta: 1, nivel: 2 },
+{ nota1: "si#4", nota2: "lab5", opcoes: ["Sexta maior", "Sexta menor", "Sétima dobrada diminuta", "Sexta aumentada"], correta: 2, nivel: 4 },
+{ nota1: "si#4", nota2: "la5", opcoes: ["Sexta menor", "Sexta aumentada", "Sétima diminuta", "Sexta maior"], correta: 2, nivel: 3 },
+{ nota1: "si#4", nota2: "la#5", opcoes: ["Sétima menor", "Sétima diminuta", "Sétima maior", "Sexta aumentada"], correta: 0, nivel: 2 },
+{ nota1: "si#4", nota2: "sib5", opcoes: ["Sétima maior", "Sétima diminuta", "Sétima menor", "Oitava dobrada diminuta"], correta: 3, nivel: 4 },
+{ nota1: "si#4", nota2: "si5", opcoes: ["Sétima menor", "Sétima aumentada", "Oitava diminuta", "Sétima maior"], correta: 2, nivel: 3 },
+{ nota1: "si#4", nota2: "si#5", opcoes: ["Oitava aumentada", "Oitava diminuta", "Oitava justa", "Nona menor"], correta: 2, nivel: 2 },
+{ nota1: "si#4", nota2: "dob6", opcoes: ["Nona dobrada diminuta", "Oitava diminuta", "Nona menor", "Oitava aumentada"], correta: 0, nivel: 4 },
+{ nota1: "si#4", nota2: "do6", opcoes: ["Oitava justa", "Nona diminuta", "Nona maior", "Oitava aumentada"], correta: 1, nivel: 3 },
+{ nota1: "si#4", nota2: "do#6", opcoes: ["Nona menor", "Nona maior", "Nona diminuta", "Nona aumentada"], correta: 0, nivel: 2 }
 ];
-
-// ============================================================
-// EMBARALHAMENTO
-// ============================================================
-
-// Fisher–Yates: retorna uma cópia embaralhada do array
-function embaralhar(array) {
-  const copia = array.slice();
-  for (let i = copia.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copia[i], copia[j]] = [copia[j], copia[i]];
-  }
-  return copia;
-}
-
-// Embaralha as opções de uma pergunta e recalcula o índice correto
-function embaralharOpcoes(pergunta) {
-  const indices = pergunta.opcoes.map((_, i) => i);
-  const indicesEmbaralhados = embaralhar(indices);
-  const novasOpcoes = indicesEmbaralhados.map(i => pergunta.opcoes[i]);
-  const novaCorreta = indicesEmbaralhados.indexOf(pergunta.correta);
-  return {
-    nota1: pergunta.nota1,
-    nota2: pergunta.nota2,
-    opcoes: novasOpcoes,
-    correta: novaCorreta
-  };
-}
-
-// Gera a lista final: perguntas embaralhadas, cada uma com opções embaralhadas
-function gerarPerguntasEmbaralhadas() {
-  return embaralhar(perguntasOriginais).map(embaralharOpcoes);
-}
-
-// Lista que o quiz usa de fato (será regenerada em cada reinício)
-let perguntas = [];
 
 // ============================================================
 // ÁUDIO
@@ -931,6 +862,7 @@ function tocarIntervalo(nome1, nome2) {
   const freq1 = notaParaFrequencia(nome1);
   const freq2 = notaParaFrequencia(nome2);
   const durNota = 1.2;
+  const gapMelodico = 0.6;
 
   if (modo === 'melodico') {
     tocarNota(freq1, 0, durNota);
@@ -1070,6 +1002,7 @@ function gerarAnalise(nome1, nome2) {
   const natural1 = { letra: n1.letra, oitava: n1.oitava };
   const natural2 = { letra: n2.letra, oitava: n2.oitava };
   const semNat = semitonsNaturais(natural1, natural2);
+  const qualBase = qualidadeNatural(num);
   const bonitoNat1 = NOME_LETRA[n1.letra] + n1.oitava;
   const bonitoNat2 = NOME_LETRA[n2.letra] + n2.oitava;
   const passos = [];
@@ -1176,10 +1109,40 @@ function desenharPartitura(nome1, nome2) {
 }
 
 // ============================================================
+// NÍVEIS E FILA DE PERGUNTAS
+// ============================================================
+function embaralhar(array) {
+  const copia = array.slice();
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+function nivelDe(p) { return Number(p.nivel) || 4; } // sem nivel = vai para o final
+
+function modoSelecionado() {
+  const el = document.querySelector('input[name="modoNivel"]:checked');
+  return el ? el.value : 'basico';
+}
+
+function montarFila() {
+  const modo = modoSelecionado();
+  if (modo === 'avancado') return embaralhar(perguntas);
+
+  const grupos = {};
+  perguntas.forEach(p => { (grupos[nivelDe(p)] = grupos[nivelDe(p)] || []).push(p); });
+
+  return Object.keys(grupos).map(Number).sort((a, b) => a - b)
+    .flatMap(n => modo === 'intermediario' ? embaralhar(grupos[n]) : grupos[n]);
+}
+
+// ============================================================
 // ESTADO
 // ============================================================
+let fila = [];
 let indiceAtual = 0;
-let selecionada = null;
 let respostas = [];
 let quizEncerrado = false;
 let ajudaIntervaloUsada = false;
@@ -1206,8 +1169,7 @@ function renderizarPergunta() {
   pararSom();
   btnOuvir.textContent = '▶ Ouvir';
 
-  const p = perguntas[indiceAtual];
-  selecionada = null;
+  const p = fila[indiceAtual];
   respondida = false;
   ajudaIntervaloUsada = false;
   btnAjudaIntervalo.disabled = false;
@@ -1218,9 +1180,10 @@ function renderizarPergunta() {
   elPainelFeedback.innerHTML = '';
 
   btnProxima.disabled = true;
-  btnProxima.textContent = (indiceAtual === perguntas.length - 1) ? 'Finalizar ➡' : 'Próxima ➡';
+  btnProxima.textContent = (indiceAtual === fila.length - 1) ? 'Finalizar ➡' : 'Próxima ➡';
 
-  elProgresso.textContent = `Pergunta ${indiceAtual + 1} de ${perguntas.length}`;
+  const infoNivel = modoSelecionado() === 'avancado' ? '' : ` · Nível ${nivelDe(p)}`;
+  elProgresso.textContent = `Pergunta ${indiceAtual + 1} de ${fila.length}${infoNivel}`;
 
   try {
     desenharPartitura(p.nota1, p.nota2);
@@ -1235,23 +1198,50 @@ function renderizarPergunta() {
     div.className = 'opcao';
     div.textContent = texto;
     div.dataset.indice = i;
-    div.addEventListener('click', () => selecionarOpcao(i, div));
+    div.addEventListener('click', () => selecionarOpcao(i));
     elOpcoes.appendChild(div);
   });
 }
 
-function selecionarOpcao(i, elemento) {
+// ============================================================
+// CLIQUE NA OPÇÃO = RESPONDE NA HORA
+// ============================================================
+function selecionarOpcao(i) {
   if (quizEncerrado || respondida) return;
-  if (elemento.classList.contains('desabilitada')) return;
-  document.querySelectorAll('.opcao').forEach(el => el.classList.remove('selecionada'));
-  elemento.classList.add('selecionada');
-  selecionada = i;
-  btnProxima.disabled = false;
+
+  const p = fila[indiceAtual];
+  const acertou = i === p.correta;
+  respondida = true;
+
+  respostas.push({
+    pergunta: `${p.nota1} → ${p.nota2}`,
+    escolhida: p.opcoes[i],
+    correta: p.opcoes[p.correta],
+    acertou
+  });
+
+  // Verde na correta; vermelho na escolhida se errou
+  document.querySelectorAll('.opcao').forEach(el => {
+    const idx = Number(el.dataset.indice);
+    el.classList.add('desabilitada');
+    if (idx === p.correta) el.classList.add('correta');
+    else if (idx === i) el.classList.add('errada');
+  });
+
+  elPainelFeedback.innerHTML = `
+    <span class="titulo">${acertou ? '✔ Correto!' : '✘ Incorreto'}</span>
+    <div>Sua resposta: <span class="${acertou ? 'verde' : 'vermelho'}">${p.opcoes[i]}</span></div>
+    ${acertou ? '' : `<div>Resposta correta: <span class="verde">${p.opcoes[p.correta]}</span></div>`}
+  `;
+  elPainelFeedback.classList.add('visivel');
+
+  btnProxima.disabled = false;                       // libera a próxima
+  btnAjudaIntervalo.disabled = ajudaIntervaloUsada;  // Ajuda-me continua disponível
 }
 
 function ajudarIntervalo() {
   if (ajudaIntervaloUsada || quizEncerrado) return;
-  const p = perguntas[indiceAtual];
+  const p = fila[indiceAtual];
   try {
     elPainelAjuda.innerHTML = gerarAnalise(p.nota1, p.nota2);
     elPainelAjuda.classList.add('visivel');
@@ -1263,52 +1253,17 @@ function ajudarIntervalo() {
   }
 }
 
+// ============================================================
+// PRÓXIMA (avança na hora, sem espera)
+// ============================================================
 function proxima() {
-  if (selecionada === null || quizEncerrado) return;
-
-  const p = perguntas[indiceAtual];
-  const acertou = selecionada === p.correta;
-
-  respostas.push({
-    pergunta: `${p.nota1} → ${p.nota2}`,
-    escolhida: p.opcoes[selecionada],
-    correta: p.opcoes[p.correta],
-    acertou
-  });
-
-  document.querySelectorAll('.opcao').forEach(el => {
-    const i = Number(el.dataset.indice);
-    el.classList.add('desabilitada');
-    el.classList.remove('selecionada');
-    if (i === p.correta) el.classList.add('correta');
-    else if (i === selecionada) el.classList.add('errada');
-  });
-
-  elPainelFeedback.innerHTML = `
-    <span class="titulo">${acertou ? '✔ Correto!' : '✘ Incorreto'}</span>
-    <div>Sua resposta: <span class="${acertou ? 'verde' : 'vermelho'}">${p.opcoes[selecionada]}</span></div>
-    ${acertou ? '' : `<div>Resposta correta: <span class="verde">${p.opcoes[p.correta]}</span></div>`}
-  `;
-  elPainelFeedback.classList.add('visivel');
-
-  respondida = true;
-  btnAjudaIntervalo.disabled = true;
-  btnProxima.disabled = true;
-  btnOuvir.disabled = true;
-  pararSom();
-
-  const ehUltima = indiceAtual === perguntas.length - 1;
-  const delay = 900;
-
-  const id = setTimeout(() => {
-    if (ehUltima) {
-      encerrar();
-    } else {
-      indiceAtual++;
-      renderizarPergunta();
-    }
-  }, delay);
-  timeoutIds.push(id);
+  if (!respondida || quizEncerrado) return;
+  if (indiceAtual === fila.length - 1) {
+    encerrar();
+  } else {
+    indiceAtual++;
+    renderizarPergunta();
+  }
 }
 
 // ============================================================
@@ -1342,13 +1297,9 @@ function encerrar() {
   document.getElementById('btnReiniciar').addEventListener('click', reiniciar);
 }
 
-// ============================================================
-// REINICIAR — gera nova ordem aleatória
-// ============================================================
 function reiniciar() {
-  perguntas = gerarPerguntasEmbaralhadas(); // <-- nova ordem a cada reinício
+  fila = montarFila();   // refaz a ordem conforme o nível escolhido
   indiceAtual = 0;
-  selecionada = null;
   respostas = [];
   quizEncerrado = false;
   respondida = false;
@@ -1369,15 +1320,18 @@ btnProxima.addEventListener('click', proxima);
 btnEncerrar.addEventListener('click', encerrar);
 btnAjudaIntervalo.addEventListener('click', ajudarIntervalo);
 btnOuvir.addEventListener('click', () => {
-  const p = perguntas[indiceAtual];
+  const p = fila[indiceAtual];
   if (p) tocarIntervalo(p.nota1, p.nota2);
 });
+// trocar o nível reinicia o quiz com a nova ordem
+document.querySelectorAll('input[name="modoNivel"]').forEach(r => r.addEventListener('change', reiniciar));
 
 // ============================================================
-// INÍCIO — gera ordem aleatória já na primeira partida
+// INÍCIO
 // ============================================================
-perguntas = gerarPerguntasEmbaralhadas();
+fila = montarFila();
 renderizarPergunta();
+
 </script>
 </body>
 </html>
