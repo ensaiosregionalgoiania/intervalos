@@ -146,6 +146,59 @@
 }
 #nivel label { cursor: pointer; user-select: none; color: #f0f0f0; }
 #nivel input[type="radio"] { accent-color: #ffd369; cursor: pointer; margin-right: 4px; }
+/* ===================== AJUSTES PARA CELULAR ===================== */
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  min-height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right))
+           max(12px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+}
+
+/* evita atraso/zoom por toque duplo e o "hover preso" no celular */
+.opcao, button, .modo-som label, #nivel label {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+@media (hover: none) {
+  .opcao:hover:not(.desabilitada):not(.selecionada) {
+    background: #3d3d5c;
+    border-color: transparent;
+  }
+}
+
+@media (max-width: 600px) {
+  body { padding-top: max(10px, env(safe-area-inset-top)); }
+  .container { padding: 16px 14px; border-radius: 12px; }
+
+  h1 { font-size: 1.25rem; }
+  .subtitulo { font-size: 0.85rem; margin-bottom: 14px; }
+  .pergunta { font-size: 1rem; }
+
+  #nivel { font-size: 0.85rem; gap: 8px 12px; padding: 8px 10px; }
+  #nivel input[type="radio"] { width: 18px; height: 18px; }
+
+  #partitura { padding: 6px; min-height: 170px; }
+  #partitura svg { width: 100%; max-width: 340px; height: auto; }
+  #legendaNotas { font-size: 0.9rem; }
+
+  .opcao { padding: 14px; min-height: 48px; font-size: 1rem; }
+
+  /* botões viram grade 2x2; Próxima/Encerrar/Reiniciar ocupam a linha toda */
+  .botoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  button { min-width: 0; min-height: 48px; padding: 10px 8px; font-size: 0.95rem; }
+  #btnProxima, #btnEncerrar, #btnReiniciar { grid-column: 1 / -1; }
+
+  .modo-som { gap: 6px 14px; }
+  .modo-som label { padding: 8px 2px; }
+  .modo-som input[type="radio"] { width: 20px; height: 20px; vertical-align: middle; }
+
+  #painelAjudaIntervalo, #painelFeedback { padding: 12px; font-size: 0.9rem; }
+  #resultados { padding: 16px; }
+  #resultados .pontuacao { font-size: 1.2rem; }
+  .gabarito li { overflow-wrap: anywhere; }
+}
+/* ================================================================ */
 </style>
 </head>
 <body>
